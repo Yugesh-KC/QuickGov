@@ -6,5 +6,5 @@ def image_to_english(image_path,api_key):
     english_text=translate_to_english(nepali_text,api_key)
     return english_text
 
-print(image_to_english('image.png','AIzaSyC-vr3iTmOpB_TApQc3Nxr9LnFy52N4bcY'))
+
     
