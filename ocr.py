@@ -9,7 +9,3 @@ def ocr_from_image(image_path):
     
     return text
 
-# Example usage
-image_path = 'image.png'
-extracted_text = ocr_from_image(image_path)
-print(extracted_text)
