@@ -11,6 +11,8 @@ func SetupRoutes(app *fiber.App) {
 	ul := api.Group("/user")
 	bl := api.Group("/bookmark")
 	al := api.Group("/article")
+	cl := api.Group("/chat")
+	sl := api.Group("/session")
 
 	ul.Get("/", handler.GetAllUsers)
 	ul.Get("/:id", handler.GetSingleUser)
@@ -20,6 +22,12 @@ func SetupRoutes(app *fiber.App) {
 	bl.Patch("/:user_id", handler.UpdateBookmarkTopics)
 
 	al.Get("/", handler.GetAllArticles)
+
+	cl.Post("/", handler.AddMessage)
+	cl.Get("/:session_id", handler.FetchAllChats)
+
+	sl.Post("/", handler.CreateSession)
+	sl.Get("/", handler.FetchAllSessions)
 	// ul.Put("/:id")
 	// ul.Delete("/:id")
 
