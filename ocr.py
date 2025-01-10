@@ -1,11 +1,7 @@
 from PIL import Image
 import pytesseract
 
-# Set the path to your Tesseract executable (if not in your PATH)
-# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Windows example
-
 def ocr_from_image(image_path):
-    # Open the image file
     img = Image.open(image_path)
     
     # Perform OCR on the image using the Nepali language
