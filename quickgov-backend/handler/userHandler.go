@@ -32,6 +32,14 @@ func CreateUser(c *fiber.Ctx) error {
 	if err = db.Create(&user).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Could not create user", "data": err.Error()})
 	}
+	bookmarks := model.Bookmark{
+		UserID: user.ID,
+		Topics: []string{},
+	}
+
+	if err = db.Create(&bookmarks).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Could not create bookmark", "data": err.Error()})
+	}
 
 	return c.Status(201).JSON(fiber.Map{"status": "success", "message": "User has been created", "data": user})
 }
