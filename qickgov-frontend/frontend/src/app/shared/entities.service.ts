@@ -1,5 +1,7 @@
+import { Entity } from "./entity.model";
+
 export class EntityService {
-  private entities: { name: string, url: string }[] = [
+  private entities: Entity[] = [
     { name: 'Ministry of Home Affairs', url: 'https://mohp.gov.np/' },
     { name: 'Ministry of Foreign Affairs', url: 'https://mofa.gov.np/' },
     { name: 'Ministry of Finance', url: 'https://mof.gov.np/' },

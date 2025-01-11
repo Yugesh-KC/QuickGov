@@ -15,11 +15,13 @@ import { BookmarkService } from './shared/bookmark.service';
 import { ReleaseDetailComponent } from './release-detail/release-detail.component';
 import { LoginService } from './login.service';
 import { EntityService } from './shared/entities.service';
+import { EntityComponent } from './entity/entity.component';
 
 const appRoutes: Routes = [
   { path: 'user', component: MainPageComponent },
   { path: 'detail', component: ReleaseDetailComponent },
-  // { path: '/', component: LoginComponent }
+  { path: 'entity/:name', component: EntityComponent },
+  { path: '', component: LoginComponent }
 ]
 
 @NgModule({
@@ -31,7 +33,8 @@ const appRoutes: Routes = [
     ReleaseComponent,
     LoginComponent,
     MainPageComponent,
-    ReleaseDetailComponent
+    ReleaseDetailComponent,
+    EntityComponent
   ],
   imports: [
     BrowserModule,
