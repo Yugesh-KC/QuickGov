@@ -1,0 +1,63 @@
+<nav class="bg-gray-800 p-4 w-full">
+  <div class="flex justify-between items-center">
+    <div class="text-white text-lg font-bold">QuickGov</div>
+    <div class="space-x-6 flex items-center">
+      <a [routerLink]="['/user']" class="text-white hover:bg-gray-700 px-4 py-2 rounded">Home</a>
+      <a href="#" class="text-white hover:bg-gray-700 px-4 py-2 rounded">About</a>
+      <!-- <a href="#" class="text-white hover:bg-gray-700 px-4 py-2 rounded">Entities</a> -->
+      <div class="relative">
+        <button [ngClass]="{'bg-gray-700': isActiveEntity, 'hover:bg-gray-700': !isActive}"
+          (click)="isActiveBtnEntity();toggleDropdownEntity()" class="text-white px-4 py-2 rounded">
+          <!-- Heroicons profile icon -->
+          Entities
+        </button>
+
+        <div *ngIf="isDropdownOpenEntity"
+          class="absolute right-0 mt-2 w-48 bg-white border border-gray-300 shadow-lg rounded-md z-51 overflow-auto max-h-60">
+
+          <!-- Search Input Field with Icon -->
+          <div class="relative mb-2">
+            <input type="text" [(ngModel)]="entitySearch" (input)="filterEntities()" placeholder="Search..."
+              class="w-full pl-10 pr-4 py-2  bg-gray-200 border-none outline-none focus:ring-0 focus:border-none">
+
+            <!-- Search Icon inside the input field -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 4a7 7 0 100 14 7 7 0 000-14zm6 7h-2.3m-5.4 0H4m8 8h.01" />
+            </svg>
+          </div>
+
+          <!-- Dropdown options -->
+          <!-- <a *ngFor="let entity of entities" [routerLink]="['entity',entity.name]"
+            class="block px-4 py-2 text-gray-700 hover:bg-gray-200">{{entity.name}}</a>
+        </div> -->
+          <a *ngFor="let entity of filteredEntities" (click)="goToEntity(entity)"
+            class="block px-4 py-2 text-gray-700 hover:bg-gray-200">
+            {{ entity.name }}
+          </a>
+        </div>
+      </div>
+
+      <!-- Profile Icon in place of "Contact" -->
+      <div class="relative">
+        <button [ngClass]="{'bg-gray-700': isActive, 'hover:bg-gray-700': !isActive}"
+          (click)="isActiveBtn();toggleDropdown()" class="text-white px-4 py-2 rounded">
+          <!-- Heroicons profile icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 17c0 2.5-3 3.5-3 3.5S9 19.5 9 17c0-1.5 1.5-3 3-3s3 1.5 3 3zM12 3a4 4 0 100 8 4 4 0 000-8z" />
+          </svg></button>
+        <div *ngIf="isDropdownOpen"
+          class="absolute right-0 mt-2 w-48 bg-white border border-gray-300 shadow-lg rounded-md">
+          <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">User</a>
+          <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Bookmarks</a>
+          <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Log Out</a>
+        </div>
+      </div>
+
+
+
+    </div>
+  </div>
+</nav>
