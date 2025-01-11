@@ -14,6 +14,7 @@ type Bookmark struct {
 	ID        uuid.UUID   `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
 	UserID    uuid.UUID   `gorm:"type:uuid;not null" json:"user_id"`
 	Topics    StringArray `gorm:"type:text[]" json:"topics"`
+	Articles  StringArray `gorm:"type:text[]" json:"articles"`
 	CreatedAt time.Time   `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time   `gorm:"autoUpdateTime" json:"updated_at"`
 }

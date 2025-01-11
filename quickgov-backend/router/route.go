@@ -28,8 +28,10 @@ func SetupRoutes(app *fiber.App) {
 
 	bl.Get("/:user_id", handler.GetBookmarks)
 	bl.Patch("/:user_id", handler.UpdateBookmarkTopics)
+	bl.Get("/:user_id/articles", handler.GetBookmarkedArticles)
 
 	al.Get("/", handler.GetAllArticles)
+	al.Get("/:ministry", handler.GetArticlesByMinistry)
 
 	cl.Post("/", handler.AddMessage)
 	cl.Get("/:session_id", handler.FetchAllChats)
