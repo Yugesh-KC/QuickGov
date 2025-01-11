@@ -169,3 +169,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+/qickgov-frontend/frontend/src/assets/scraped-images

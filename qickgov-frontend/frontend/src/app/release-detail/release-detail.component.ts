@@ -3,6 +3,7 @@ import { Release } from '../shared/release.model';
 import { ActivatedRoute, Params } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ReleaseService } from '../shared/release.-service.service';
+import { MinistryMappingService } from '../shared/ministrymapping.service';
 
 @Component({
   selector: 'app-release-detail',
@@ -12,6 +13,8 @@ import { ReleaseService } from '../shared/release.-service.service';
 export class ReleaseDetailComponent implements OnInit, OnDestroy {
   releases: Release[] = [];
   release: Release | undefined;
+  fullMinistryName: string | undefined;
+  imageLocation: string | undefined;
   private paramSubscription: Subscription;
 
   chat: string = '';
@@ -19,7 +22,8 @@ export class ReleaseDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private relservice: ReleaseService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private ministryMappingService: MinistryMappingService
   ) {}
 
   ngOnInit() {
@@ -31,6 +35,10 @@ export class ReleaseDetailComponent implements OnInit, OnDestroy {
         for (let release of this.releases) {
           if (release.id === releaseId) {
             this.release = release;
+            this.imageLocation = `assets/images/${release.location}`;
+            this.fullMinistryName = this.ministryMappingService.getMinistryName(
+              release.ministry
+            );
             break;
           }
         }
