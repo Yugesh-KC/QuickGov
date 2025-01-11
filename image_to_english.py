@@ -6,4 +6,3 @@ def image_to_english(image_path,api_key):
     english_text=translate_to_english(nepali_text,api_key)
     return english_text
 
-    
