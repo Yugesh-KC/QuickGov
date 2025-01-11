@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { Release } from '../shared/release.model';
 import { ReleaseService } from '../shared/release.-service.service';
+import { MinistryMappingService } from '../shared/ministrymapping.service';
 
 @Component({
   selector: 'app-entity',
@@ -15,7 +16,8 @@ export class EntityComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private releaseService: ReleaseService
+    private releaseService: ReleaseService,
+    private ministryMappingService: MinistryMappingService
   ) {}
 
   ngOnInit() {
@@ -29,7 +31,10 @@ export class EntityComponent implements OnInit, OnDestroy {
           this.releases = data;
 
           for (let release of this.releases) {
-            if (release.ministry === this.entityName) {
+            if (
+              this.ministryMappingService.getMinistryName(release.ministry) ===
+              this.entityName
+            ) {
               this.entityReleases.push(release);
             }
           }
