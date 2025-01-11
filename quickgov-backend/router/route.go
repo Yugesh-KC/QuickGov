@@ -2,6 +2,7 @@ package router
 
 import (
 	"quickgov-backend/handler"
+	"quickgov-backend/scraper"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -13,6 +14,11 @@ func SetupRoutes(app *fiber.App) {
 	al := api.Group("/article")
 	cl := api.Group("/chat")
 	sl := api.Group("/session")
+
+	api.Get("/scrape", func(c *fiber.Ctx) error {
+		go scraper.RunScraper()
+		return c.SendString("Scraping started!")
+	})
 
 	ul.Get("/", handler.GetAllUsers)
 	ul.Get("/:id", handler.GetSingleUser)

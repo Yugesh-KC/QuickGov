@@ -1,4 +1,4 @@
-package main
+package scraper
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"quickgov-backend/handler"
 	"strings"
 	"sync"
 	"time"
@@ -13,32 +14,33 @@ import (
 	"github.com/gocolly/colly"
 )
 
-type press_release struct {
+type PressRelease struct {
 	date  string `selector:"td:nth-child(1)"`
 	title string `selector:"td:nth-child(2) > a"`
 	url   string `selector:"td:nth-child(2) > a[href]" attr:"href"`
 }
 
-type image_data struct {
+type ImageData struct {
 	page_url  string
 	image_url string
 }
 
-func main() {
+func RunScraper() {
 	c := colly.NewCollector(colly.Async(true), colly.CacheDir("./colly_cache"))
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		Parallelism: 3,
 		Delay:       2 * time.Second,
+		RandomDelay: 500 * time.Millisecond,
 	})
 
-	var press_releases []press_release
-	var images []image_data
+	var PressReleases []PressRelease
+	var images []ImageData
 	var wg sync.WaitGroup
 
 	c.OnHTML("table tbody", func(e *colly.HTMLElement) {
 		e.ForEach("tr", func(_ int, el *colly.HTMLElement) {
-			pr := &press_release{}
+			pr := &PressRelease{}
 			err := el.Unmarshal(pr)
 			if err != nil {
 				fmt.Println("Error unmarshalling:", err)
@@ -51,7 +53,7 @@ func main() {
 			}
 			pr.date = el.ChildText("td:nth-child(1)")
 			pr.url = el.ChildAttr("td:nth-child(2) > a", "href")
-			press_releases = append(press_releases, *pr)
+			PressReleases = append(PressReleases, *pr)
 		})
 	})
 
@@ -87,9 +89,9 @@ func main() {
 		page++
 	}
 
-	for _, pr := range press_releases {
+	for _, pr := range PressReleases {
 		wg.Add(1)
-		go func(pr press_release) {
+		go func(pr PressRelease) {
 			defer wg.Done()
 
 			imageCollector := colly.NewCollector()
@@ -98,7 +100,7 @@ func main() {
 				imgSrc := e.Attr("src")
 				pageUrl := e.Request.URL.String()
 				if imgSrc != "" {
-					images = append(images, image_data{page_url: pageUrl, image_url: imgSrc})
+					images = append(images, ImageData{page_url: pageUrl, image_url: imgSrc})
 					pr.url = imgSrc
 					return
 				}
@@ -108,7 +110,7 @@ func main() {
 				link := e.Attr("href")
 				pageUrl := e.Request.URL.String()
 				if link != "" {
-					images = append(images, image_data{page_url: pageUrl, image_url: link})
+					images = append(images, ImageData{page_url: pageUrl, image_url: link})
 					pr.url = link
 				}
 			})
@@ -123,7 +125,7 @@ func main() {
 	wg.Wait()
 
 	// fmt.Println("Collected Press Releases:")
-	// for _, pr := range press_releases {
+	// for _, pr := range PressReleases {
 	// 	fmt.Printf("Date: %s, Title: %s, URL: %s\n", pr.date, pr.title, pr.url)
 	// }
 
@@ -131,21 +133,22 @@ func main() {
 	for _, img := range images {
 		// fmt.Printf("Page: %s, Image: %s\n", img.page_url, img.image_url)
 
-		for i := range press_releases {
-			if press_releases[i].url == img.page_url {
-				press_releases[i].url = img.image_url
+		for i := range PressReleases {
+			if PressReleases[i].url == img.page_url {
+				PressReleases[i].url = img.image_url
 			}
 		}
 	}
 
 	fmt.Println("\nCollected Data:")
-	for _, pr := range press_releases {
+	for _, pr := range PressReleases {
 		fmt.Printf("Date: %s, Title: %s,  URL: %s\n", pr.date, pr.title, pr.url)
-		saveImage(pr.url, fmt.Sprintf("scraped-images/moha/%s", strings.ReplaceAll(pr.date, " ", "_")))
+		filename := saveImage(pr.url, fmt.Sprintf("scraped-images/moha/%s", strings.ReplaceAll(pr.date, " ", "_")))
+		handler.SaveScraped(pr.date, pr.title, filename, "moha")
 	}
 }
 
-func saveImage(url string, baseFilename string) {
+func saveImage(url string, baseFilename string) string {
 
 	os.MkdirAll("scraped-images/moha", os.ModePerm)
 	ext := filepath.Ext(url)
@@ -153,7 +156,7 @@ func saveImage(url string, baseFilename string) {
 		resp, err := http.Head(url)
 		if err != nil || resp.StatusCode != http.StatusOK {
 			fmt.Println("Error checking URL:", url)
-			return
+			return ""
 		}
 		contentType := resp.Header.Get("Content-Type")
 		switch contentType {
@@ -165,7 +168,7 @@ func saveImage(url string, baseFilename string) {
 			ext = ".pdf"
 		default:
 			fmt.Println("Unsupported content type:", contentType)
-			return
+			return ""
 		}
 	}
 
@@ -173,22 +176,23 @@ func saveImage(url string, baseFilename string) {
 	out, err := os.Create(filename)
 	if err != nil {
 		fmt.Println("Error creating file:", err)
-		return
+		return ""
 	}
 	defer out.Close()
 
 	response, err := http.Get(url)
 	if err != nil {
 		fmt.Println("Error downloading file:", err)
-		return
+		return ""
 	}
 	defer response.Body.Close()
 
 	_, err = io.Copy(out, response.Body)
 	if err != nil {
 		fmt.Println("Error saving file:", err)
-		return
+		return ""
 	}
 
 	fmt.Printf("File saved to %s\n", filename)
+	return filename
 }
