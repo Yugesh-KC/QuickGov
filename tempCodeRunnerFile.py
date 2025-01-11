@@ -1,1 +1,3 @@
-extracted_text = ocr_from_image(image_path)
+Example usage:
+result = pdf_to_ocr_text("example.pdf")
+print(result)
