@@ -1,6 +1,6 @@
-import { Release } from "./release.model"
-export class BookMark {
+import { Release } from './release.model';
 
-  constructor(public title: string, public releases: Release[]) { }
-
+export interface BookMark {
+  topic: string;
+  articles: Release[];
 }

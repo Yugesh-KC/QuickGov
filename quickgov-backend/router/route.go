@@ -22,9 +22,9 @@ func SetupRoutes(app *fiber.App) {
 	})
 	api.Post("/summarize", handler.SummarizeArticles)
 
-	ul.Get("/", handler.GetAllUsers)
-	ul.Get("/:id", handler.GetSingleUser)
-	ul.Post("/", handler.CreateUser)
+	// ul.Get("/", handler.GetAllUsers)
+	ul.Post("/", handler.GetSingleUser)
+	ul.Post("/create/", handler.CreateUser)
 
 	bl.Get("/:user_id", handler.GetBookmarks)
 	bl.Patch("/:user_id", handler.UpdateBookmarkTopics)

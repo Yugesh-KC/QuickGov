@@ -9,7 +9,7 @@ import { Release } from './release.model';
 })
 export class ReleaseService {
   releaseDetail = new EventEmitter<string>();
-  private apiUrl = 'http://localhost:8080/api/article/mohp';
+  private apiUrl = 'http://localhost:8080/api/article/';
   private releases: Release[] = []; // Cache for fetched releases
   private isFetching: boolean = false; // Flag to prevent multiple fetches
 

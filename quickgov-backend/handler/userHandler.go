@@ -5,7 +5,8 @@ import (
 	"quickgov-backend/model"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
+	"gorm.io/gorm"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -47,26 +48,43 @@ func CreateUser(c *fiber.Ctx) error {
 func GetSingleUser(c *fiber.Ctx) error {
 	db := database.DB.Db
 	var user model.User
-	id := c.Params("id")
-	db.Find(&user, "id = ?", id)
 
-	if user.ID == uuid.Nil {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
+	// Create a variable to hold the request body
+	var req struct {
+		Email string `json:"email"` // Field to hold the user's email
 	}
 
-	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "Users found", "data": user})
-}
-
-func GetAllUsers(c *fiber.Ctx) error {
-	db := database.DB.Db
-	var users []model.User
-
-	//db.Raw("SELECT * FROM Users").Scan(&users)
-	db.Find(&users)
-
-	if len(users) == 0 {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Users not found", "data": nil})
+	// Parse the JSON body into req
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "Invalid request", "data": nil})
 	}
 
-	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "Users found", "data": users})
+	// Find user by email
+	result := db.Where("email = ?", req.Email).First(&user)
+
+	// Check if user was found
+	if result.Error != nil {
+
+		if result.Error == gorm.ErrRecordNotFound {
+			return c.Status(404).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
+		}
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Database error", "data": nil})
+	}
+
+	// User found, respond with user data
+	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "User found", "data": user})
 }
+
+// func GetAllUsers(c *fiber.Ctx) error {
+// 	db := database.DB.Db
+// 	var users []model.User
+
+// 	//db.Raw("SELECT * FROM Users").Scan(&users)
+// 	db.Find(&users)
+
+// 	if len(users) == 0 {
+// 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Users not found", "data": nil})
+// 	}
+
+// 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "Users found", "data": users})
+// }

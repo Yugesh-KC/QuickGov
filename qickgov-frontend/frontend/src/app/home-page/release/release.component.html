@@ -1,5 +1,6 @@
-<div *ngIf="release" class="flex flex-col bg-white p-4 h-64 rounded-lg shadow-lg mb-4 transition-all duration-300 ease-in-out transform hover:shadow-2xl hover:border" (click)="onClick()">
+<div *ngIf="release" class="flex flex-col bg-white p-4 h-60 rounded-lg shadow-lg mb-4 transition-all duration-300 ease-in-out transform hover:shadow-2xl hover:border" (click)="onClick()">
   <h1 class="text-xl font-bold text-gray-800 mb-2">{{ release.title }}</h1>
-  <div class="text-gray-600 mb-2">{{ release.ministry }}</div>
+  <div class="text-gray-600 mb-2 text-sm">{{ release.date }}</div>
+  <div class="text-gray-600 mb-2 text-xs font-bold">{{ fullMinistryName }}</div>
   <div class="text-gray-600 mb-2 overflow-hidden">{{ release.article }}</div>
 </div>

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Release } from './release.model';
-import { BookMark } from './bookmark.model';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ReleaseService } from './release.-service.service';
+import { map, catchError } from 'rxjs/operators';
+import { BookMark } from './bookmark.model';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root',
@@ -10,32 +11,37 @@ import { ReleaseService } from './release.-service.service';
 export class BookmarkService {
   private bookmarks: BookMark[] = [];
 
-  constructor(private rlservice: ReleaseService) {}
+  constructor(private http: HttpClient, private userService: UserService) {}
 
-  initializeBookmarks() {
-    this.rlservice.getReleases().subscribe(
-      (releases) => {
-        console.log('Releases received in BookmarkService:', releases);
-        if (Array.isArray(releases)) {
-          this.bookmarks = releases.map((release) => ({
-            title: release.article,
-            releases: [release],
-          }));
-        } else {
-          console.error('Releases is not an array:', releases);
-          this.bookmarks = [];
-        }
-      },
-      (error) => {
-        console.error('Error in initializeBookmarks:', error);
-        this.bookmarks = [];
-      }
+  initializeBookmarks(): Observable<BookMark[]> {
+    const userId = this.userService.getUserId();
+    if (!userId) {
+      console.error('User ID is not set');
+      return new Observable<BookMark[]>((observer) => {
+        observer.next([]);
+        observer.complete();
+      });
+    }
+
+    const url = `http://localhost:8080/api/bookmark/${userId}/articles`;
+
+    return this.http.get<{ data: BookMark[] }>(url).pipe(
+      map((response) => {
+        console.log('Bookmarks received:', response.data);
+        this.bookmarks = response.data;
+        return this.bookmarks;
+      }),
+      catchError((error) => {
+        console.error('Error fetching bookmarks:', error);
+        return new Observable<BookMark[]>((observer) => {
+          observer.next([]);
+          observer.complete();
+        });
+      })
     );
   }
 
-  getBookMark() {
-    return this.bookmarks.slice();
+  getBookmarks(): BookMark[] {
+    return this.bookmarks;
   }
-
-  removeBookmark() {}
 }

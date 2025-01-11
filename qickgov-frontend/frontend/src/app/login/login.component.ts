@@ -1,49 +1,63 @@
 import { Component } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { LoginService } from '../login.service';
+import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { UserService } from '../shared/user.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css'],
 })
 export class LoginComponent {
-
-  userName: string;
-  password: string;
+  email: string = '';
+  password: string = '';
   isValidUser: boolean = false;
+  skipLogin: boolean = false;
   loginText: string = '';
-  skipLogin: boolean;
 
-  constructor(private router: Router, private loginReset: LoginService) {
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private userService: UserService
+  ) {}
 
-  }
-
-
-  ngOnInit() {
-    this.userName = '';
-  }
-  users: { email: string, password: string }[] = [{ email: 'simran', password: '1234' }, { email: 'sexy', password: '12ab' }]
-
-  userCheck() {
-    for (let user of this.users) {
-      if (this.userName == user.email && this.password == user.password) {
-        this.isValidUser = true;
-        break;
-      }
-
+  onLogin() {
+    const email = this.email.trim();
+    if (!email) {
+      this.loginText = 'Please enter an email';
+      return;
     }
 
-    if (this.isValidUser == true) {
-      this.skipLogin = true;
-      console.log(this.isValidUser, this.userName)
-      this.router.navigate(['user']);
-    }
-    else {
-      this.skipLogin = false;
-      this.loginText = 'Please Enter a valid email or password'
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const body = { email: email };
 
-    }
+    this.http
+      .post('http://localhost:8080/api/user/', body, { headers })
+      .subscribe(
+        (response: any) => {
+          if (
+            response.status === 'success' &&
+            response.data &&
+            response.data.ID
+          ) {
+            this.isValidUser = true;
+            this.skipLogin = true;
+            this.userService.setUserId(response.data.ID);
+            console.log('User ID:', this.userService.getUserId());
+            this.router.navigate(['user']);
+          } else {
+            this.isValidUser = false;
+            this.skipLogin = false;
+            this.loginText = 'Please enter a valid email or password';
+          }
+        },
+        (error) => {
+          console.error('Error during login:', error);
+          this.isValidUser = false;
+          this.skipLogin = false;
+          this.loginText = 'Please enter a valid email or password';
+        }
+      );
   }
 
   onSkipLogin() {
