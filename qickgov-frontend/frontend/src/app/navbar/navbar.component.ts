@@ -22,7 +22,7 @@ export class NavbarComponent {
 
   ngOnInit() {
     this.entities = this.entityService.getEntity();
-    this.entities = this.entityService.getEntity();  // Fetch entities from the service
+
     this.filteredEntities = [...this.entities];  // Initialize filteredEntities to all entities
   }
   isActiveBtn() {

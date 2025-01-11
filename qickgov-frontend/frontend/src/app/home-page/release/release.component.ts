@@ -17,7 +17,7 @@ export class ReleaseComponent {
     // this.releases = this.releaseService.releases;
   }
   onClick() {
-    this.releaseService.releaseDetail.emit(this.release);
+    this.releaseService.releaseDetail.emit(this.release.id);
     console.log('click has occured')
   }
 }

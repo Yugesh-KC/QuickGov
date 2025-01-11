@@ -13,8 +13,8 @@ export class MainPageComponent {
   constructor(private relService: ReleaseService, private router: Router, private loginser: LoginService) { }
   ngOnInit() {
     // this.loginser.loginReset.emit(true);
-    this.relService.releaseDetail.subscribe((release: Release) => {
-      this.router.navigate(['/detail'])
+    this.relService.releaseDetail.subscribe((id: number) => {
+      this.router.navigate(['/detail', id])
 
     })
 

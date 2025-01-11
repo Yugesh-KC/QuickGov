@@ -2,7 +2,7 @@ import { EventEmitter } from "@angular/core";
 import { Release } from "./release.model";
 export class ReleaseService {
 
-  releaseDetail = new EventEmitter<Release>();
+  releaseDetail = new EventEmitter<number>();
 
   releases: Release[] = [{ id: 1023, type: 'notice', summary: 'Summary for Ministry of Home Affairs', source: 'Ministry of Home Affairs', URL: 'https://mohp.gov.np/' },
   { id: 2045, type: 'notice', summary: 'Summary for Ministry of Foreign Affairs', source: 'Ministry of Foreign Affairs', URL: 'https://mofa.gov.np/' },

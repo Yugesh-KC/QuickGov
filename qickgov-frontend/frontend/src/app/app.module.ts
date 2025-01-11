@@ -19,7 +19,7 @@ import { EntityComponent } from './entity/entity.component';
 
 const appRoutes: Routes = [
   { path: 'user', component: MainPageComponent },
-  { path: 'detail', component: ReleaseDetailComponent },
+  { path: 'detail/:id', component: ReleaseDetailComponent },
   { path: 'entity/:name', component: EntityComponent },
   { path: '', component: LoginComponent }
 ]
