@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, input, Input } from '@angular/core';
 import { ReleaseService } from '../../shared/release.-service.service';
 import { Release } from '../../shared/release.model';
+import { BookmarkService } from '../../shared/bookmark.service';
 
 @Component({
   selector: 'app-release',
@@ -9,8 +10,10 @@ import { Release } from '../../shared/release.model';
 })
 export class ReleaseComponent {
   @Input() release: Release;
+  @Input() isPinned: boolean = false;
+
   //leases: Release[];
-  constructor(private releaseService: ReleaseService) {
+  constructor(private releaseService: ReleaseService, private bookser: BookmarkService) {
 
   }
   ngOnInit() {
@@ -19,5 +22,10 @@ export class ReleaseComponent {
   onClick() {
     this.releaseService.releaseDetail.emit(this.release.id);
     console.log('click has occured')
+  }
+  onPinToggle(event: Event) {
+    this.isPinned = !this.isPinned;
+    event.stopPropagation()
+
   }
 }

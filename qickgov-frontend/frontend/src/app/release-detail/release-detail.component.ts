@@ -26,6 +26,9 @@ export class ReleaseDetailComponent {
         }
       }
     })
+
+
+
   }
 
 

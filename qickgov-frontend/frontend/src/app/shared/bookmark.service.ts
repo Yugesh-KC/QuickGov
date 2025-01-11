@@ -7,22 +7,22 @@ export class BookmarkService {
   private bookmarks: BookMark[];
   constructor(private rlservice: ReleaseService) {
     this.bookmarks =
-    [{
-      title: 'Melanchi', releases: this.rlservice.getRelease()
-    },
-    {
-      title: 'Melanchi', releases: this.rlservice.getRelease()
-    },
-    {
-      title: 'Melanchi', releases: this.rlservice.getRelease()
-    },
-    {
-      title: 'Melanchi', releases: this.rlservice.getRelease()
-    },
-    {
-      title: 'Melanchi', releases: this.rlservice.getRelease()
-    }
-    ]
+      [{
+        id: 1, title: 'Melanchi', releases: this.rlservice.getRelease()
+      },
+      {
+        id: 2, title: 'Melanchi', releases: this.rlservice.getRelease()
+      },
+      {
+        id: 3, title: 'Melanchi', releases: this.rlservice.getRelease()
+      },
+      {
+        id: 4, title: 'Melanchi', releases: this.rlservice.getRelease()
+      },
+      {
+        id: 5, title: 'Melanchi', releases: this.rlservice.getRelease()
+      }
+      ]
 
   }
 
@@ -36,6 +36,12 @@ export class BookmarkService {
   getBookMark() {
     return this.bookmarks.slice();
   }
+
+  addBookmark(bookmark: BookMark) {
+    this.bookmarks.push(bookmark);
+  }
   // addBookmark() { }
-  removeBookmark() { }
+  removeBookmark(id: number) {
+    this.bookmarks.splice(id, 1)
+  }
 }

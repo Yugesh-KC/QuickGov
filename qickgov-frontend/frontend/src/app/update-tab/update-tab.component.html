@@ -1,4 +1,4 @@
-<body class="overflow-x-hidden">
+<body (click)="onUpdateDisplay()" class="overflow-x-hidden">
   <div class=" bg-gray-200 p-6 shadow-md border border-gray-200">
     <h2 class="text-2xl font-bold text-gray-800 mb-4">Updates on
       Bookmarked Topics
@@ -10,7 +10,7 @@
         <hr class="my-2">
         <div class="max-h-52 overflow-y-auto mt-2 pr-2">
           <div *ngFor="let release of bookmark.releases">
-            <app-release [release]=" release"></app-release>
+            <app-release [release]=" release" [isPinned]="true"></app-release>
           </div>
         </div>
       </div>

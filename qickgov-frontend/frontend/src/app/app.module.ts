@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
@@ -16,12 +16,18 @@ import { ReleaseDetailComponent } from './release-detail/release-detail.componen
 import { LoginService } from './login.service';
 import { EntityService } from './shared/entities.service';
 import { EntityComponent } from './entity/entity.component';
+import { PdfViewerComponent, PdfViewerModule } from 'ng2-pdf-viewer';
+import { UserPageComponent } from './user-page/user-page.component';
+import { UpdateCoverComponent } from './update-cover/update-cover.component';
+import { HomePageCoverComponent } from './home-page-cover/home-page-cover.component';
 
 const appRoutes: Routes = [
   { path: 'user', component: MainPageComponent },
   { path: 'detail/:id', component: ReleaseDetailComponent },
   { path: 'entity/:name', component: EntityComponent },
-  { path: '', component: LoginComponent }
+  { path: '', component: LoginComponent },
+  { path: 'update', component: UpdateCoverComponent },
+  { path: 'latest', component: HomePageCoverComponent }
 ]
 
 @NgModule({
@@ -34,14 +40,18 @@ const appRoutes: Routes = [
     LoginComponent,
     MainPageComponent,
     ReleaseDetailComponent,
-    EntityComponent
+    EntityComponent,
+    UserPageComponent,
+    UpdateCoverComponent,
+    HomePageCoverComponent
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(appRoutes),
-    FormsModule
+    FormsModule,
+    PdfViewerModule
   ],
-  providers: [ReleaseService, BookmarkService, LoginService, EntityService],
+  providers: [ReleaseService, BookmarkService, LoginService, EntityService, PdfViewerComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

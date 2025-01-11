@@ -1,5 +1,5 @@
 <app-navbar></app-navbar>
-<div class="flex h-screen w-full">
+<div *ngIf="!hideMainPage" class="flex h-screen w-full">
   <div class="w-2/3 bg-gray-100 p-4 overflow-y-auto">
     <app-home-page></app-home-page>
   </div>
@@ -7,3 +7,4 @@
     <app-update-tab></app-update-tab>
   </div>
 </div>
+<router-outlet></router-outlet>
