@@ -11,6 +11,7 @@ import { ActivatedRoute, Params } from '@angular/router';
 export class ReleaseDetailComponent {
   releases: Release[];
   release: Release;
+  chat: string;
   constructor(private relservice: ReleaseService, private route: ActivatedRoute) {
 
   }
