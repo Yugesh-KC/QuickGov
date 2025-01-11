@@ -127,6 +127,10 @@ def add_to_history(chat_history, user_message, assistant_response):
     # Append user message and assistant response to history
     chat_history.append(f"User: {user_message}")
     chat_history.append(f"Assistant: {assistant_response}")
+
+    all_history.append(f"User: {user_message}")
+    all_history.append(f"Assistant: {assistant_response}")
+
     
     # Truncate the history to keep it at a manageable length
     if len(chat_history) > MAX_HISTORY_LENGTH * 2:  # Each message adds 2 entries (User + Assistant)
@@ -199,6 +203,7 @@ if __name__ == "__main__":
     MAX_HISTORY_LENGTH = 4
     load_dotenv()
     chat_history = []
+    all_history = []
     embed_model = FastEmbedEmbedding(model_name="BAAI/bge-small-en-v1.5")
     groq_api_key = os.environ["GROQ_API_KEY"]
     llm1 = Groq(model="Llama3-70b-8192", api_key=groq_api_key)
