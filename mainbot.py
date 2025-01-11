@@ -15,18 +15,22 @@ def generate_related_questions(question):
     """
     Generate related questions from the user's query using the LLM.
     """
+   
     related_questions_prompt = PromptTemplate(
         template="""You are an assistant that generates rephrasings and similar variations of the user's question.
-        Create 10 variations of the question that use synonyms, alternate phrasing, or very slight expansions. Use synonyms for the keywords too.
-        The questions should remain closely related in context and meaning. Avoid introducing unrelated or different topics.
+        Create 15 variations of the question that use synonyms, alternate phrasing, or very slight expansions. Use synonyms for the keywords too.
+        The questions should remain closely related in context and meaning. Avoid introducing unrelated or different topics.Phrase the question in such a way that its answer can be found in different legal documents in Nepal.
 
         Original Question: {question}
         Similar Questions (one per line):
         1."""
     )
+
     
     related_questions_chain = related_questions_prompt | llm | StrOutputParser()
+
     related_questions = related_questions_chain.invoke({"question": question}).strip().split("\n")
+  
     # print(related_questions)
     # Filter out unwanted lines
     clean_questions = []
@@ -35,6 +39,7 @@ def generate_related_questions(question):
         # Include only lines that start with a question number or plausible question text
         if line and (line[0].isdigit() or line.startswith("What") or line.startswith("How") or line.startswith("Who")):
             clean_questions.append(line.lstrip("12345. ").strip())  # Remove numbering and extra spaces
+    # print(clean_questions)
     
     # print(clean_questions)
     return clean_questions
@@ -58,6 +63,7 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
         # Retrieve context for the current query
         docs = retriever.retrieve(query+  " infer any info that you can get related to this query")
         
+        
         docs= "\n".join([d.text for d in docs])  # Combine document texts
         # print("For one DOc---------------------")
         # print(docs)
@@ -75,6 +81,8 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
         )
         generation_chain = generation_prompt | llm | StrOutputParser()
         generation = generation_chain.invoke({"context": docs, "question": question}).strip()
+        # print(query)
+        # print(generation)
 
         # Check if the answer is satisfactory
         if not any(phrase in generation.lower() for phrase in disallowed_phrases):
@@ -82,10 +90,10 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
             return generation  
 
         # Log progress (optional)
-        print(f"Attempt {idx + 1}: No satisfactory answer found.")
+        # print(f"Attempt {idx + 1}: No satisfactory answer found.")
 
         # Stop after 5 attempts
-        if idx == 11:
+        if idx == 16:
             break
 
     return "The context cannot provide a satisfactory answer to the query."
@@ -202,7 +210,7 @@ if __name__ == "__main__":
         api_key=os.getenv("QDRANT_API_KEY"),
     )
     # Initialize vector store and storage context
-    vector_store = QdrantVectorStore(client=client, collection_name="laws")
+    vector_store = QdrantVectorStore(client=client, collection_name="newcollection")
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     # Build index from documents
     index = VectorStoreIndex.from_vector_store(vector_store=vector_store)

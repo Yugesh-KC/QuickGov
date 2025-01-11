@@ -27,7 +27,7 @@ def generate_related_questions(question):
     
     related_questions_chain = related_questions_prompt | llm | StrOutputParser()
     related_questions = related_questions_chain.invoke({"question": question}).strip().split("\n")
-    # print(related_questions)
+    print(related_questions)
     # Filter out unwanted lines
     clean_questions = []
     for line in related_questions:
@@ -36,7 +36,7 @@ def generate_related_questions(question):
         if line and (line[0].isdigit() or line.startswith("What") or line.startswith("How") or line.startswith("Who")):
             clean_questions.append(line.lstrip("12345. ").strip())  # Remove numbering and extra spaces
     
-    # print(clean_questions)
+    print(clean_questions)
     return clean_questions
 
 
@@ -59,8 +59,8 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
         docs = retriever.retrieve(query+  " infer any info that you can get related to this query")
         
         docs= "\n".join([d.text for d in docs])  # Combine document texts
-        # print("For one DOc---------------------")
-        # print(docs)
+        print("For one DOc---------------------")
+        print(docs)
 
 
 
@@ -78,7 +78,7 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
 
         # Check if the answer is satisfactory
         if not any(phrase in generation.lower() for phrase in disallowed_phrases):
-               # For debugging
+            print(generation.lower())  # For debugging
             return generation  
 
         # Log progress (optional)
@@ -110,7 +110,7 @@ def decide_context_usage(question, chat_history):
 )
     decision_chain = decision_prompt | llm | StrOutputParser()
     decision = decision_chain.invoke({"question": question, "chat_history": chat_history}).strip().lower()
-    # print(decision)
+    print(decision)
     
     return decision == "yes"
 
@@ -134,10 +134,9 @@ def output_llm(question, chat_history=[]):
     use_context = decide_context_usage(question, chat_history)
 
     if use_context:
-        generation = iterative_retrieval_and_answer(question, chat_history)
-        print(f"Assistant: {generation}")
+        response = iterative_retrieval_and_answer(question, chat_history)
         # Retrieve context from the vector database
-        return generation
+        return response
     else:
         # Use chat history as context
         docs = [f"Chat History: {chat_history}"]
@@ -162,8 +161,7 @@ def output_llm(question, chat_history=[]):
 
         rag_chain = generation_prompt | llm | StrOutputParser()
         generation = rag_chain.invoke({"context": docs, "question": question})
-        print(f"Assistant: {generation}") 
-      
+        print(generation)
         return generation
 
 
@@ -182,7 +180,7 @@ def chatbot(chat_history = []):
         chat_history = add_to_history(chat_history, user_input, response)
         
         # Print or log the chat history
-        # print(chat_history)
+        print(chat_history)
         
     return chat_history
 
