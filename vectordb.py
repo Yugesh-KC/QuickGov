@@ -16,7 +16,7 @@ embed_model = FastEmbedEmbeddings(model_name="BAAI/bge-base-en-v1.5")
 
 from llama_parse import LlamaParse
 llama_parse_api_key=os.environ["LLAMA_PARSE_API_KEY"]
-llama_parse_documents = LlamaParse(api_key=llama_parse_api_key, result_type="markdown").load_data(["constitution.pdf","criminal.pdf", "citizenship.pdf"])
+llama_parse_documents = LlamaParse(api_key=llama_parse_api_key, result_type="markdown").load_data(["files/constitution.pdf","files/criminal.pdf", "files/citizenship.pdf"])
 embed_model = FastEmbedEmbedding(model_name="BAAI/bge-small-en-v1.5")
 groq_api_key = os.environ["GROQ_API_KEY"]
 llm1 = Groq(model="Llama3-70b-8192", api_key=groq_api_key)
