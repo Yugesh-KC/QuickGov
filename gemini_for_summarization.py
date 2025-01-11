@@ -1,16 +1,17 @@
 import google.generativeai as genai
+from typing import Tuple
 
-def summarize_document(document: str, api_key: str, max_length: int = 100) -> str:
+def summarize_document(document: str, api_key: str, max_length: int = 100) -> Tuple[str, str]:
     """
-    Summarizes a document using Google's Gemini API.
+    Generates a title and summary for a document using Google's Gemini API.
     
     Args:
         document (str): The text content to be summarized
         api_key (str): Your Google API key for Gemini
-        max_length (int, optional): Maximum length of the summary in words. Defaults to 250.
+        max_length (int, optional): Maximum length of the summary in words. Defaults to 100.
     
     Returns:
-        str: A summary of the input document
+        Tuple[str, str]: A tuple containing (title, summary) of the input document
         
     Raises:
         ValueError: If the API key is invalid or document is empty
@@ -29,8 +30,20 @@ def summarize_document(document: str, api_key: str, max_length: int = 100) -> st
         # Initialize the model
         model = genai.GenerativeModel('gemini-pro')
         
-        # Create the prompt
-        prompt = f"""Please provide a concise summary of the following text in no more than {max_length} words. 
+        # Create the title prompt
+        title_prompt = f"""Generate a concise, engaging title (maximum 10 words) for the following text.
+        The title should capture the main theme or topic while mainly foncusing on what the public needs to know.
+        
+        Text:
+        {document}
+        """
+        
+        # Generate the title
+        title_response = model.generate_content(title_prompt)
+        title = title_response.text.strip()
+        
+        # Create the summary prompt
+        summary_prompt = f"""Please provide a concise summary of the following text in no more than {max_length} words. 
         Focus on the main points and key insights.
         
         Text to summarize:
@@ -38,15 +51,13 @@ def summarize_document(document: str, api_key: str, max_length: int = 100) -> st
         """
         
         # Generate the summary
-        response = model.generate_content(prompt)
+        summary_response = model.generate_content(summary_prompt)
+        summary = summary_response.text.strip()
         
-        # Extract and return the summary
-        summary = response.text.strip()
-        
-        return summary
+        return (title, summary)
     
     except Exception as e:
-        raise Exception(f"Error generating summary: {str(e)}")
+        raise Exception(f"Error generating title and summary: {str(e)}")
 
 # Example usage:
 """
@@ -56,8 +67,9 @@ Your long document text here...
 '''
 
 try:
-    summary = summarize_document(document, api_key)
-    print(summary)
+    title, summary = summarize_document(document, api_key)
+    print(f"Title: {title}")
+    print(f"\nSummary: {summary}")
 except Exception as e:
     print(f"Error: {e}")
 """
