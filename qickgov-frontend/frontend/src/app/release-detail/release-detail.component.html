@@ -1,0 +1,16 @@
+<app-navbar></app-navbar>
+<div class="bg-gray-100 min-h-screen p-6">
+  <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Release Details</h2>
+
+  <!-- Display the release details -->
+  <div *ngIf="release" class="bg-white p-8 rounded-lg shadow-lg">
+    <h3 class="text-2xl font-semibold text-gray-800 mb-4">{{ release.type | capitalize }}</h3>
+    <p class="text-sm text-gray-600 mb-4">{{ release.summary }}</p>
+    <a href="{{ release.URL }}" target="_blank" class="text-blue-500 hover:underline">Read more</a>
+    <p class="text-xs text-gray-500 mt-4">Source: {{ release.source }}</p>
+  </div>
+
+  <div *ngIf="!release" class="text-center text-gray-500">
+    Release not found.
+  </div>
+</div>

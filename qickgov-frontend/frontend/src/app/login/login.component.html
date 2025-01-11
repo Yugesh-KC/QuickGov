@@ -1,0 +1,24 @@
+<div *ngIf="!skipLogin" class="bg-gray-900 flex items-center justify-center h-screen">
+  <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-96">
+    <h2 class="text-white text-2xl font-bold mb-6 text-center">Login to QuickGov</h2>
+
+    <label for="Username" class="block text-gray-300 mb-2">Username</label>
+    <input type="text" id="Username" [(ngModel)]="userName"
+      class="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-gray-500 mb-4">
+
+    <label for="Password" class="block text-gray-300 mb-2">Password</label>
+    <input type="password" id="Password" [(ngModel)]="password"
+      class="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-gray-500 mb-6">
+    <a [routerLink]="['user']">
+      <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-bold transition mb-4"
+        (click)="userCheck()">Log
+        in</button>
+    </a>
+
+
+    <button [routerLink]="['home']" (click)="onSkipLogin()"
+      class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">Skip Log in</button>
+  </div>
+
+</div>
+<router-outlet></router-outlet>
