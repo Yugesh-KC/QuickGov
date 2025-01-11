@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"quickgov-backend/config"
 	"quickgov-backend/database"
 	"quickgov-backend/model"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -59,10 +59,10 @@ func SummarizeArticles(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to fetch articles", "data": err.Error()})
 	}
 
-	apiKey := "AIzaSyC-JOfG2Oc3CppcZVC3FxwbEXzSm9y1Zgs"
+	apiKey := config.Config("API_KEY")
 	for _, article := range articles {
 
-		if article.Article == "" && !strings.HasSuffix(article.Location, ".pdf") {
+		if article.Article == "" {
 			fileName := article.Location
 			maxLengthOfWords := 60
 			var errors []string
