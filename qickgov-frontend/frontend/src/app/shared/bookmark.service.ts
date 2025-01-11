@@ -44,4 +44,16 @@ export class BookmarkService {
   getBookmarks(): BookMark[] {
     return this.bookmarks;
   }
+
+  getBookMark() {
+    return this.bookmarks.slice();
+  }
+
+  addBookmark(bookmark: BookMark) {
+    this.bookmarks.push(bookmark);
+  }
+  // addBookmark() { }
+  removeBookmark(id: number) {
+    this.bookmarks.splice(id, 1);
+  }
 }

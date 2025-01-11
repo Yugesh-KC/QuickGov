@@ -11,6 +11,9 @@ import { MinistryMappingService } from '../../shared/ministrymapping.service';
 export class ReleaseComponent implements OnChanges {
   @Input() release: Release;
   fullMinistryName: string;
+  @Input() isPinned: boolean = false;
+
+  //leases: Release[];
 
   constructor(
     private releaseService: ReleaseService,
@@ -29,5 +32,9 @@ export class ReleaseComponent implements OnChanges {
   onClick() {
     this.releaseService.releaseDetail.emit(this.release.id);
     console.log('Click has occurred for release ID:', this.release.id);
+  }
+  onPinToggle(event: Event) {
+    this.isPinned = !this.isPinned;
+    event.stopPropagation();
   }
 }

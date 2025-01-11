@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BookmarkService } from '../shared/bookmark.service';
 import { BookMark } from '../shared/bookmark.model';
 import { UserService } from '../shared/user.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-update-tab',
@@ -13,7 +14,8 @@ export class UpdateTabComponent implements OnInit {
 
   constructor(
     private bookmarkService: BookmarkService,
-    private userService: UserService
+    private userService: UserService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -22,6 +24,9 @@ export class UpdateTabComponent implements OnInit {
         this.bookmarks = bookmarks;
       });
     }
+  }
+  onUpdateDisplay() {
+    this.router.navigate(['/update']);
   }
 
   hasUserId(): boolean {

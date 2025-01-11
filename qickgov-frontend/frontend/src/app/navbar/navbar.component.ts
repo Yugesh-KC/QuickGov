@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { EntityService } from '../shared/entities.service';
 import { Router } from '@angular/router';
 import { Entity } from '../shared/entity.model';
+import { LoginService } from '../login.service';
 
 @Component({
   selector: 'app-navbar',
@@ -16,10 +17,14 @@ export class NavbarComponent {
   entities: { name: string, url: string }[];
   entitySearch: String;
   filteredEntities: Entity[];
-  constructor(private entityService: EntityService, private router: Router) {
+  isLoggedIn: boolean = false;
+  constructor(private entityService: EntityService, private router: Router, private lser: LoginService) {
 
   }
-
+  login() {
+    this.router.navigate(['/update'])
+    this.lser.loginReset.emit(true);
+  }
   ngOnInit() {
     this.entities = this.entityService.getEntity();
 

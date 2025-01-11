@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ReleaseService } from '../shared/release.-service.service';
 import { Release } from '../shared/release.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home-page',
@@ -8,9 +9,9 @@ import { Release } from '../shared/release.model';
   styleUrls: ['./home-page.component.css'],
 })
 export class HomePageComponent implements OnInit {
-  releases: Release[] = [];
+  releases: Release[] = []; // Initialize as an empty array
 
-  constructor(private releaseService: ReleaseService) {}
+  constructor(private releaseService: ReleaseService, private router: Router) {}
 
   ngOnInit() {
     console.log('Fetching releases...');
@@ -24,5 +25,9 @@ export class HomePageComponent implements OnInit {
         console.error('Error fetching releases:', error);
       }
     );
+  }
+
+  onLatestExpand() {
+    this.router.navigate(['/latest']);
   }
 }

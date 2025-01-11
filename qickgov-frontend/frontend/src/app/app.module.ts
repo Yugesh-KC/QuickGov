@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
@@ -17,12 +17,21 @@ import { LoginService } from './login.service';
 import { EntityService } from './shared/entities.service';
 import { HttpClientModule } from '@angular/common/http';
 import { EntityComponent } from './entity/entity.component';
+import { PdfViewerComponent, PdfViewerModule } from 'ng2-pdf-viewer';
+import { UserPageComponent } from './user-page/user-page.component';
+import { UpdateCoverComponent } from './update-cover/update-cover.component';
+import { HomePageCoverComponent } from './home-page-cover/home-page-cover.component';
+import { SearchFilterComponent } from './search-filter/search-filter.component';
+import { ChatbotComponent } from './chatbot/chatbot.component';
 
 const appRoutes: Routes = [
   { path: 'user', component: MainPageComponent },
   { path: 'detail/:id', component: ReleaseDetailComponent },
   { path: 'entity/:name', component: EntityComponent },
   { path: '', component: LoginComponent },
+  { path: 'update', component: UpdateCoverComponent },
+  { path: 'latest', component: HomePageCoverComponent },
+  { path: 'chatbot', component: ChatbotComponent },
 ];
 
 @NgModule({
@@ -36,6 +45,11 @@ const appRoutes: Routes = [
     MainPageComponent,
     ReleaseDetailComponent,
     EntityComponent,
+    UserPageComponent,
+    UpdateCoverComponent,
+    HomePageCoverComponent,
+    SearchFilterComponent,
+    ChatbotComponent,
   ],
   imports: [
     BrowserModule,
@@ -43,7 +57,14 @@ const appRoutes: Routes = [
     FormsModule,
     HttpClientModule,
   ],
-  providers: [ReleaseService, BookmarkService, LoginService, EntityService],
+
+  providers: [
+    ReleaseService,
+    BookmarkService,
+    LoginService,
+    EntityService,
+    PdfViewerComponent,
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
