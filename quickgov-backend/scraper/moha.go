@@ -2,10 +2,6 @@ package scraper
 
 import (
 	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
 	"quickgov-backend/handler"
 	"strings"
 	"sync"
@@ -14,18 +10,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-type PressRelease struct {
-	date  string `selector:"td:nth-child(1)"`
-	title string `selector:"td:nth-child(2) > a"`
-	url   string `selector:"td:nth-child(2) > a[href]" attr:"href"`
-}
-
-type ImageData struct {
-	page_url  string
-	image_url string
-}
-
-func RunScraper() {
+func RunScraperMOHA() {
 	c := colly.NewCollector(colly.Async(true), colly.CacheDir("./colly_cache"))
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
@@ -143,56 +128,7 @@ func RunScraper() {
 	fmt.Println("\nCollected Data:")
 	for _, pr := range PressReleases {
 		fmt.Printf("Date: %s, Title: %s,  URL: %s\n", pr.date, pr.title, pr.url)
-		filename := saveImage(pr.url, fmt.Sprintf("scraped-images/moha/%s", strings.ReplaceAll(pr.date, " ", "_")))
+		filename := saveImage(pr.url, fmt.Sprintf("scraped-images/moha/%s", strings.ReplaceAll(pr.date, " ", "_")), "scraped-images/moha")
 		handler.SaveScraped(pr.date, pr.title, filename, "moha")
 	}
-}
-
-func saveImage(url string, baseFilename string) string {
-
-	os.MkdirAll("scraped-images/moha", os.ModePerm)
-	ext := filepath.Ext(url)
-	if ext == "" {
-		resp, err := http.Head(url)
-		if err != nil || resp.StatusCode != http.StatusOK {
-			fmt.Println("Error checking URL:", url)
-			return ""
-		}
-		contentType := resp.Header.Get("Content-Type")
-		switch contentType {
-		case "image/jpeg":
-			ext = ".jpg"
-		case "image/png":
-			ext = ".png"
-		case "application/pdf":
-			ext = ".pdf"
-		default:
-			fmt.Println("Unsupported content type:", contentType)
-			return ""
-		}
-	}
-
-	filename := fmt.Sprintf("%s%s", baseFilename, ext)
-	out, err := os.Create(filename)
-	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return ""
-	}
-	defer out.Close()
-
-	response, err := http.Get(url)
-	if err != nil {
-		fmt.Println("Error downloading file:", err)
-		return ""
-	}
-	defer response.Body.Close()
-
-	_, err = io.Copy(out, response.Body)
-	if err != nil {
-		fmt.Println("Error saving file:", err)
-		return ""
-	}
-
-	fmt.Printf("File saved to %s\n", filename)
-	return filename
 }
