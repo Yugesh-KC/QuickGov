@@ -13,10 +13,13 @@ import { MainPageComponent } from './main-page/main-page.component';
 import { FormsModule } from '@angular/forms';
 import { BookmarkService } from './shared/bookmark.service';
 import { ReleaseDetailComponent } from './release-detail/release-detail.component';
+import { LoginService } from './login.service';
+import { EntityService } from './shared/entities.service';
 
 const appRoutes: Routes = [
   { path: 'user', component: MainPageComponent },
-  { path: 'detail', component: ReleaseDetailComponent }
+  { path: 'detail', component: ReleaseDetailComponent },
+  // { path: '/', component: LoginComponent }
 ]
 
 @NgModule({
@@ -35,7 +38,7 @@ const appRoutes: Routes = [
     RouterModule.forRoot(appRoutes),
     FormsModule
   ],
-  providers: [ReleaseService, BookmarkService],
+  providers: [ReleaseService, BookmarkService, LoginService, EntityService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
