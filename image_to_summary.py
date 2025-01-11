@@ -12,12 +12,17 @@ async def image_to_summary(
     api_key: str = Form(...),
     max_length_of_words: int = Form(...)
 ):
-    if not os.path.exists(file_name):
-        return JSONResponse(content={"error": "File not found"}, status_code=404)
+    print(f"Received file name: {file_name}")
     
+    # Check if the file exists
+    if not os.path.exists(file_name):
+        return JSONResponse(content={"error": "File not found", "file_name": file_name}, status_code=404)
+    
+    # Process the image
     image_in_english_text = image_to_english(file_name, api_key)
     title, summarized_document = summarize_document(image_in_english_text, api_key, max_length_of_words)
 
+    # Return the result as JSON
     return JSONResponse(content={"title": title, "summary": summarized_document})
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ func SetupRoutes(app *fiber.App) {
 		go scraper.RunScraper()
 		return c.SendString("Scraping started!")
 	})
+	api.Post("/summarize", handler.SummarizeArticles)
 
 	ul.Get("/", handler.GetAllUsers)
 	ul.Get("/:id", handler.GetSingleUser)
