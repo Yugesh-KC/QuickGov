@@ -36,7 +36,7 @@ def generate_related_questions(question):
         if line and (line[0].isdigit() or line.startswith("What") or line.startswith("How") or line.startswith("Who")):
             clean_questions.append(line.lstrip("12345. ").strip())  # Remove numbering and extra spaces
     
-    # print(clean_questions)
+    print(clean_questions)
     return clean_questions
 
 
