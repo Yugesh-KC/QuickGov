@@ -9,6 +9,10 @@ from llama_index.llms.groq import Groq
 from llama_index.core import Settings, VectorStoreIndex, StorageContext
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 import qdrant_client
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
 
 
 def generate_related_questions(question):
@@ -175,24 +179,19 @@ def output_llm(question, chat_history=[]):
         return generation
 
 
-
+@app.route('/chat', methods=['POST'])
 def chatbot(chat_history = []):
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == "exit":
-            print("Goodbye!")
-            break
+    user_input = request.json.get('message')  # Get the message from the request
+        # user_input = input("You: ")
+    if user_input.lower() == "exit":
+        return jsonify({"response": "Goodbye!"}), 200
         
         # Generate response based on the current user input
-        response = output_llm(user_input, chat_history)
+    response = output_llm(user_input, chat_history)
         
         # Update chat history
-        chat_history = add_to_history(chat_history, user_input, response)
-        
-        # Print or log the chat history
-        # print(chat_history)
-        
-    return chat_history
+    chat_history = add_to_history(chat_history, user_input, response)  
+    return jsonify({"response": response}), 200
 
 # Main logic remains the same
 if __name__ == "__main__":
@@ -222,5 +221,5 @@ if __name__ == "__main__":
         api_key=os.getenv("GROQ_API_KEY")
     )
 
-    chatbot()
+    app.run(debug=True)
 
