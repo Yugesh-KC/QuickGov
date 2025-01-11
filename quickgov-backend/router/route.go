@@ -16,8 +16,9 @@ func SetupRoutes(app *fiber.App) {
 	sl := api.Group("/session")
 
 	api.Get("/scrape", func(c *fiber.Ctx) error {
-		go scraper.RunScraper()
-		return c.SendString("Scraping started!")
+		go scraper.RunScraperMOHA()
+		go scraper.RunScraperMOHP()
+		return c.SendString("Both scrapers started!")
 	})
 	api.Post("/summarize", handler.SummarizeArticles)
 
