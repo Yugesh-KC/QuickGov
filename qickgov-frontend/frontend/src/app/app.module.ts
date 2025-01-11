@@ -20,6 +20,8 @@ import { PdfViewerComponent, PdfViewerModule } from 'ng2-pdf-viewer';
 import { UserPageComponent } from './user-page/user-page.component';
 import { UpdateCoverComponent } from './update-cover/update-cover.component';
 import { HomePageCoverComponent } from './home-page-cover/home-page-cover.component';
+import { SearchFilterComponent } from './search-filter/search-filter.component';
+import { ChatbotComponent } from './chatbot/chatbot.component';
 
 const appRoutes: Routes = [
   { path: 'user', component: MainPageComponent },
@@ -27,7 +29,8 @@ const appRoutes: Routes = [
   { path: 'entity/:name', component: EntityComponent },
   { path: '', component: LoginComponent },
   { path: 'update', component: UpdateCoverComponent },
-  { path: 'latest', component: HomePageCoverComponent }
+  { path: 'latest', component: HomePageCoverComponent },
+  { path: 'chatbot', component: ChatbotComponent }
 ]
 
 @NgModule({
@@ -43,7 +46,9 @@ const appRoutes: Routes = [
     EntityComponent,
     UserPageComponent,
     UpdateCoverComponent,
-    HomePageCoverComponent
+    HomePageCoverComponent,
+    SearchFilterComponent,
+    ChatbotComponent
   ],
   imports: [
     BrowserModule,

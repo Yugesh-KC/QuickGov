@@ -2,6 +2,9 @@
   <div class="flex justify-between items-center">
     <div class="text-white text-lg font-bold">QuickGov</div>
     <div class="space-x-6 flex items-center">
+      <a [routerLink]="['/chatbot']" class="text-white hover:bg-gray-700 px-4 py-2 rounded">
+        AI Chatbot
+      </a>
       <a [routerLink]="['/user']" class="text-white hover:bg-gray-700 px-4 py-2 rounded">Home</a>
       <a *ngIf="!isLoggedIn" (click)="login()" class="text-white hover:bg-gray-700 px-4 py-2 rounded">Updates of
         Bookmarked Event</a>
