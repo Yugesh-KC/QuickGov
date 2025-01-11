@@ -1,31 +1,40 @@
-import { Component, Input } from '@angular/core';
-import { ReleaseService } from '../shared/release.-service.service';
+import { Component, OnInit } from '@angular/core';
 import { Release } from '../shared/release.model';
 import { ActivatedRoute, Params } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { ReleaseService } from '../shared/release.-service.service';
 
 @Component({
   selector: 'app-release-detail',
   templateUrl: './release-detail.component.html',
-  styleUrl: './release-detail.component.css'
+  styleUrls: ['./release-detail.component.css'],
 })
-export class ReleaseDetailComponent {
-  releases: Release[];
-  release: Release;
-  constructor(private relservice: ReleaseService, private route: ActivatedRoute) {
+export class ReleaseDetailComponent implements OnInit {
+  releases: Release[] = [];
+  release: Release | undefined;
+  private paramSubscription: Subscription;
 
-  }
+  constructor(
+    private relservice: ReleaseService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
-    this.releases = this.relservice.getRelease();
-    this.route.params.subscribe((params: Params) => {
+    this.relservice.getReleases().subscribe((data: Release[]) => {
+      this.releases = data;
 
-      for (let release of this.releases) {
-        if (release.id == parseInt(params['id'])) {
-          this.release = release;
-        }
-      }
-    })
+      this.paramSubscription = this.route.params.subscribe((params: Params) => {
+        const releaseId = params['id'];
+        this.release = this.releases.find(
+          (release) => release.id === releaseId
+        );
+      });
+    });
   }
 
-
+  ngOnDestroy() {
+    if (this.paramSubscription) {
+      this.paramSubscription.unsubscribe();
+    }
+  }
 }

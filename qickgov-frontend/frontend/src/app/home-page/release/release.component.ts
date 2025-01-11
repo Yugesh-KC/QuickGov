@@ -1,23 +1,25 @@
-import { Component, Input } from '@angular/core';
-import { ReleaseService } from '../../shared/release.-service.service';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Release } from '../../shared/release.model';
+import { ReleaseService } from '../../shared/release.-service.service';
 
 @Component({
   selector: 'app-release',
   templateUrl: './release.component.html',
-  styleUrl: './release.component.css'
+  styleUrls: ['./release.component.css'],
 })
-export class ReleaseComponent {
+export class ReleaseComponent implements OnChanges {
   @Input() release: Release;
-  //leases: Release[];
-  constructor(private releaseService: ReleaseService) {
 
+  constructor(private releaseService: ReleaseService) {}
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.release) {
+      console.log('Release received in ReleaseComponent:', this.release);
+    }
   }
-  ngOnInit() {
-    // this.releases = this.releaseService.releases;
-  }
+
   onClick() {
     this.releaseService.releaseDetail.emit(this.release.id);
-    console.log('click has occured')
+    console.log('Click has occurred for release ID:', this.release.id);
   }
 }

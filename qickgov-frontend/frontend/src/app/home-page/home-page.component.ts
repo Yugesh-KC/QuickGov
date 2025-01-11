@@ -1,19 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ReleaseService } from '../shared/release.-service.service';
 import { Release } from '../shared/release.model';
 
 @Component({
   selector: 'app-home-page',
   templateUrl: './home-page.component.html',
-  styleUrl: './home-page.component.css'
+  styleUrls: ['./home-page.component.css'],
 })
-export class HomePageComponent {
-  releases: Release[];
-  constructor(private releaseService: ReleaseService) {
+export class HomePageComponent implements OnInit {
+  releases: Release[] = [];
 
-  }
+  constructor(private releaseService: ReleaseService) {}
+
   ngOnInit() {
-    this.releases = this.releaseService.releases;
+    console.log('Fetching releases...');
+    this.releaseService.getReleases().subscribe(
+      (data: Release[]) => {
+        console.log('Data received from service:', data);
+        this.releases = data;
+        console.log('Releases received in HomePageComponent:', this.releases);
+      },
+      (error) => {
+        console.error('Error fetching releases:', error);
+      }
+    );
   }
-
 }

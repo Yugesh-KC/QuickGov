@@ -1,41 +1,49 @@
-import { Component } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Params } from '@angular/router';
 import { Release } from '../shared/release.model';
 import { ReleaseService } from '../shared/release.-service.service';
 
 @Component({
   selector: 'app-entity',
   templateUrl: './entity.component.html',
-  styleUrl: './entity.component.css'
+  styleUrls: ['./entity.component.css'],
 })
-export class EntityComponent {
-  releases: Release[];
-  entityReleases: Release[];
+export class EntityComponent implements OnInit, OnDestroy {
   entityName: string;
-  constructor(private router: Router, private route: ActivatedRoute, private releaseService: ReleaseService) {
+  entityReleases: Release[] = [];
+  releases: Release[] = [];
 
-  }
-
+  constructor(
+    private route: ActivatedRoute,
+    private releaseService: ReleaseService
+  ) {}
 
   ngOnInit() {
     this.route.params.subscribe((params: Params) => {
       this.entityName = params['name'];
 
-      // Clear previous entityReleases to prevent accumulation
       this.entityReleases = [];
 
-      this.releases = this.releaseService.releases;
+      this.releaseService.getReleases().subscribe(
+        (data) => {
+          this.releases = data;
 
-      for (let release of this.releases) {
-        if (release.source === this.entityName) {
-          this.entityReleases.push(release);
+          for (let release of this.releases) {
+            if (release.ministry === this.entityName) {
+              this.entityReleases.push(release);
+            }
+          }
+
+          console.log('Filtered Entity Releases:', this.entityReleases);
+        },
+        (error) => {
+          console.error('Error fetching releases:', error);
         }
-      }
+      );
     });
   }
 
   ngOnDestroy() {
     this.entityReleases = [];
   }
-
 }

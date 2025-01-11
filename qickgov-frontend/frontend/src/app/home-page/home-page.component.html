@@ -4,9 +4,7 @@
 
     <!-- Grid layout for two items per row -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div *ngFor="let release of releases">
-        <app-release [release]="release"></app-release>
-      </div>
+      <app-release *ngFor="let release of releases" [release]="release"></app-release>
     </div>
   </div>
 </body>

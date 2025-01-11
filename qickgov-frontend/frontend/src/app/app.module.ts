@@ -15,14 +15,15 @@ import { BookmarkService } from './shared/bookmark.service';
 import { ReleaseDetailComponent } from './release-detail/release-detail.component';
 import { LoginService } from './login.service';
 import { EntityService } from './shared/entities.service';
+import { HttpClientModule } from '@angular/common/http';
 import { EntityComponent } from './entity/entity.component';
 
 const appRoutes: Routes = [
   { path: 'user', component: MainPageComponent },
   { path: 'detail/:id', component: ReleaseDetailComponent },
   { path: 'entity/:name', component: EntityComponent },
-  { path: '', component: LoginComponent }
-]
+  { path: '', component: LoginComponent },
+];
 
 @NgModule({
   declarations: [
@@ -34,14 +35,15 @@ const appRoutes: Routes = [
     LoginComponent,
     MainPageComponent,
     ReleaseDetailComponent,
-    EntityComponent
+    EntityComponent,
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(appRoutes),
-    FormsModule
+    FormsModule,
+    HttpClientModule,
   ],
   providers: [ReleaseService, BookmarkService, LoginService, EntityService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
