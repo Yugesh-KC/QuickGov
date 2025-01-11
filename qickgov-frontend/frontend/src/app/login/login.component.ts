@@ -20,22 +20,14 @@ export class LoginComponent {
   }
 
 
-  // ngOnInit() {
-  //   this.loginReset.loginReset.subscribe((condition: boolean) => {
-  //     this.skipLogin = false;
-  //     this.userName = '';
-  //     this.password = '';
-  //     this.isValidUser = false;
-  //     this.loginText = '';
-  //   })
-  // }
-
-  // Reset the logresetLoginForm() 
-  users: { name: string, password: string }[] = [{ name: 'simran', password: '1234' }, { name: 'sexy', password: '12ab' }]
+  ngOnInit() {
+    this.userName = '';
+  }
+  users: { email: string, password: string }[] = [{ email: 'simran', password: '1234' }, { email: 'sexy', password: '12ab' }]
 
   userCheck() {
     for (let user of this.users) {
-      if (this.userName == user.name && this.password == user.password) {
+      if (this.userName == user.email && this.password == user.password) {
         this.isValidUser = true;
         break;
       }
@@ -50,7 +42,7 @@ export class LoginComponent {
     else {
       this.skipLogin = false;
       this.loginText = 'Please Enter a valid email or password'
-      console.log(this.isValidUser)
+
     }
   }
 

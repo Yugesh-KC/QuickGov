@@ -17,7 +17,7 @@
 
           <!-- Search Input Field with Icon -->
           <div class="relative mb-2">
-            <input type="text" [(ngModel)]="entitySearch" placeholder="Search..."
+            <input type="text" [(ngModel)]="entitySearch" (input)="filterEntities()" placeholder="Search..."
               class="w-full pl-10 pr-4 py-2  bg-gray-200 border-none outline-none focus:ring-0 focus:border-none">
 
             <!-- Search Icon inside the input field -->
@@ -32,8 +32,10 @@
           <!-- <a *ngFor="let entity of entities" [routerLink]="['entity',entity.name]"
             class="block px-4 py-2 text-gray-700 hover:bg-gray-200">{{entity.name}}</a>
         </div> -->
-          <a *ngFor="let entity of entities" (click)="goToEntity(entity)"
-            class="block px-4 py-2 text-gray-700 hover:bg-gray-200">{{entity.name}}</a>
+          <a *ngFor="let entity of filteredEntities" (click)="goToEntity(entity)"
+            class="block px-4 py-2 text-gray-700 hover:bg-gray-200">
+            {{ entity.name }}
+          </a>
         </div>
       </div>
 
