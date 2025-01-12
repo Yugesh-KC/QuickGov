@@ -1,11 +1,11 @@
-<body (click)="onLatestExpand()" class="overflow-x-hidden relative">
+<body  class="overflow-x-hidden relative">
   <div class="bg-gray-200 h-full flex flex-col shadow-md border border-gray-200 relative">
     <!-- Fixed Header -->
     <h2 class="text-2xl font-bold text-gray-800 p-6 bg-gray-200 sticky top-0 z-10">Latest Notices & Releases</h2>
 
     <div class="flex justify-start gap-4 px-4 ml-2 pb-4 bg-gray-200">
-      <button (click)="toggleHighlight('notices')" [ngClass]="{'bg-gray-400': highlightedButton === 'notices', 'bg-gray-300': highlightedButton !== 'notices'}" class="text-gray-800 px-4 py-2 rounded-full transition">Notices</button>
-      <button (click)="toggleHighlight('releases')" [ngClass]="{'bg-gray-400': highlightedButton === 'releases', 'bg-gray-300': highlightedButton !== 'releases'}" class="text-gray-800 px-4 py-2 rounded-full transition">Releases</button>
+      <button (click)="toggleHighlight('notice')" [ngClass]="{'bg-gray-400': highlightedButton === 'notice', 'bg-gray-300': highlightedButton !== 'notice'}" class="text-gray-800 px-4 py-2 rounded-full transition">Notice</button>
+      <button (click)="toggleHighlight('release')" [ngClass]="{'bg-gray-400': highlightedButton === 'release', 'bg-gray-300': highlightedButton !== 'release'}" class="text-gray-800 px-4 py-2 rounded-full transition">Release</button>
       <button (click)="toggleHighlight('progressReport')" [ngClass]="{'bg-gray-400': highlightedButton === 'progressReport', 'bg-gray-300': highlightedButton !== 'progressReport'}" class="text-gray-800 px-4 py-2 rounded-full transition">Progress Report</button>
       <button (click)="toggleHighlight('publication')" [ngClass]="{'bg-gray-400': highlightedButton === 'publication', 'bg-gray-300': highlightedButton !== 'publication'}" class="text-gray-800 px-4 py-2 rounded-full transition">Publication</button>
     </div>
@@ -13,7 +13,7 @@
     <!-- Scrollable Grid Container -->
     <div class="flex-1 overflow-y-auto p-6 pt-0">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <app-release *ngFor="let release of releases" [release]="release"></app-release>
+        <app-release *ngFor="let release of filteredReleases" [release]="release"></app-release>
       </div>
     </div>
 
