@@ -123,7 +123,7 @@ def check_context(text, user_query,chat_history, recently_retrieved_info):
     template=""" Determine if additional context is needed.  
 
 **Steps:**  
-1. Check if the question is related to Nepal's law, constitution, or legal matters or related to chat's history or about different incidents or news.  
+1. Check if the question is related to the press release text given below,  Nepal's law, constitution, or legal matters or related to chat's history or about different incidents or news in Nepal.  
    - If unrelated, respond: "Decision: no, Expanded Question: I cannot answer questions unrelated to Nepal's law or legal matters."  
 
 2. Check the press release for the answer.  
@@ -166,30 +166,7 @@ Expanded Question: [original question OR expanded version if needed]"""
 
 
 def bot(chat_history = []):
-    text = """ Government of Nepal
-
-Letter Number:- Singhdarbar,
-Received Letter Number and Date:- Kathmandu, Nepal.
-Chane.:- 2
-
-Date 2079/02/23 at 08:50 in the morning, Asmita Tharu, approximately 41 years old, a resident of Ward No. 2, Madhuwan Municipality, Bardiya district, was seriously injured in the Sonha forest. Sonha While sitting under the shade of a tree while plowing a field about 100 meters south of his house, a tiger attacked him from behind. which was sent to Nepalgunj for treatment.
-
-Various demands including control of tiger attacks and provision of wire mesh were made by the locals and the Postal Highway-section was blocked. At 3:45 pm, a team from Bardia National Park including rangers and security personnel was mobilized to the scene to control the tiger.
-
-As the security personnel were coordinating to open the blocked highway, the situation worsened when an angry mob attacked the security personnel at around 6:15 pm. Injured when a bullet hit her. She died in hospital during treatment. In this event, 20 security personnel including Nepal Police and Armed Police Force, Nepal have also been injured. In addition, 1 local resident was injured and is undergoing treatment at Nepalgunj Nursing Home.
-
-In relation to the incident, a committee has been constituted under the chairmanship of Mr. Hari Prasad Ghimire, Joint Secretary, Ministry of Home Affairs to conduct an on-site investigation and submit a report within 7 days. It is requested to inform all concerned for information.
-
-Here
-
-Mr. Hari Prasad Ghimire, Joint Secretary, Ministry of Home Affairs -Convenor
-Mr. Beda Kumar Dhakal, Deputy Director General, Department of National Parks and Wildlife Conservation -Member
-Mr. Krishna Koirala, Superintendent of Police, Nepal Police -Member
-Mr. Vikas Pandey, Deputy Director of Research, National Investigation Department -Member
-Mr. Dhruv Bahadur Khadka, Under Secretary, Ministry of Home Affairs -Member
-
-Date: 2079/02/24
-Joint Secretary/ Spokesperson"""
+    text = get_text()
     # print(type(text))
     # print(text)
     recently_retrieved_info= ""
