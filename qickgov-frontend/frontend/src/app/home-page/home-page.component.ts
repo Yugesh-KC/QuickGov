@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 })
 export class HomePageComponent implements OnInit {
   releases: Release[] = []; // Initialize as an empty array
+  highlightedButton: string | null = null;
 
   constructor(private releaseService: ReleaseService, private router: Router) {}
 
@@ -29,5 +30,9 @@ export class HomePageComponent implements OnInit {
 
   onLatestExpand() {
     this.router.navigate(['/latest']);
+  }
+
+  toggleHighlight(button: string) {
+    this.highlightedButton = this.highlightedButton === button ? null : button;
   }
 }

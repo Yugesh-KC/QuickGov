@@ -10,8 +10,14 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 import qdrant_client
 
 from image_to_english import image_to_english
-import os
-from dotenv import load_dotenv
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+
+app = Flask(__name__)
+CORS(app)
+
+
 def generate_related_questions(question):
     """
     Generate related questions from the user's query using the LLM.
@@ -164,7 +170,7 @@ Expanded Question: [original question OR expanded version if needed]"""
     
     return decision == "yes", expanded_question
 
-
+@app.route('/chat', methods=['POST'])
 def bot(chat_history = []):
     text = """ Government of Nepal
 
@@ -192,23 +198,27 @@ Date: 2079/02/24
 Joint Secretary/ Spokesperson"""
     # print(type(text))
     # print(text)
-    recently_retrieved_info= ""
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == "exit":
-            print("Goodbye!")
-            break
+    recently_retrieved_info = ""
+    user_input = request.json.get('message')  # Get the message from the request
+        # user_input = input("You: ")
+    if user_input.lower() == "exit":
+        return jsonify({"response": "Goodbye!"}), 200
         
         # Generate response based on the current user input
-        recently_retrieved_info, response = llm_output(text,user_input, chat_history, recently_retrieved_info)
+    recently_retrieved_info, response = llm_output(text,user_input, chat_history, recently_retrieved_info)
         
         # Update chat history
-        chat_history = add_to_history(chat_history, user_input, response)
+    chat_history = add_to_history(chat_history, user_input, response)
+    return jsonify({"response": response}), 200
+
+
+        
+        # Generate response based on the current user input
+
         
         # Print or log the chat history
         # print(chat_history)
-        
-    return chat_history
+ 
 
 
 def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""):
@@ -299,6 +309,6 @@ if __name__ == "__main__":
         model="Llama3-70b-8192",
         api_key=os.getenv("GROQ_API_KEY")
     )
-    bot()
+    app.run(debug=True)
 
     
