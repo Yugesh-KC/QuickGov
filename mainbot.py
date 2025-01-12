@@ -1,4 +1,3 @@
-
 import os
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
@@ -9,6 +8,13 @@ from llama_index.llms.groq import Groq
 from llama_index.core import Settings, VectorStoreIndex, StorageContext
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 import qdrant_client
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+
+app = Flask(__name__)
+CORS(app)
+
 
 
 def generate_related_questions(question):
@@ -186,7 +192,7 @@ def decide_context_usage(question, chat_history, recently_retrieved_info):
 
     Output Format:
     Decision: [yes/no]
-    Expanded Question: [original question OR expanded version if needed]"""
+    Expanded Question: [original question OR expanded version only if absolutely needed]"""
 )
     decision_chain = decision_prompt | llm | StrOutputParser()
     response = decision_chain.invoke({"question": question, "chat_history": chat_history, "recently_retrieved_info": recently_retrieved_info}).strip()
@@ -215,6 +221,7 @@ def add_to_history(chat_history, user_message, assistant_response):
 
     all_history.append(f"User: {user_message}")
     all_history.append(f"Assistant: {assistant_response}")
+    
 
     
     # Truncate the history to keep it at a manageable length
@@ -265,37 +272,37 @@ def output_llm(question, chat_history=[], recently_retrieved_info = ""):
         rag_chain = generation_prompt | llm | StrOutputParser()
         generation = rag_chain.invoke({"context": docs, "question": question, "recently_retrieved_info":recently_retrieved_info})
         print(f"Assistant: {generation}") 
+
+    # Ensure the response is concise and relevant
+    generation = generation.strip().split("\n")[0]  # Take only the first line of the response
       
     return recently_retrieved_info, generation
 
-
-
-def chatbot(chat_history = []):
-    recently_retrieved_info = ""
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == "exit":
-            print("Goodbye!")
-            break
+@app.route('/chat', methods=['POST'])
+def chatbot(chat_history =[], recently_retrieved_info = ""):
+    if recently_retrieved_info == None:
+        recently_retrieved_info = ""
+    user_input = request.json.get('message')  # Get the message from the request
+        # user_input = input("You: ")
+    if user_input.lower() == "exit":
+        return jsonify({"response": "Goodbye!"}), 200
         
         # Generate response based on the current user input
-        recently_retrieved_info, response = output_llm(user_input, chat_history, recently_retrieved_info)
+    recently_retrieved_info, response = output_llm(user_input, chat_history, recently_retrieved_info)
         
         # Update chat history
-        chat_history = add_to_history(chat_history, user_input, response)
-        
-        # Print or log the chat history
-        # print(chat_history)
-        
-    return chat_history
+    chat_history = add_to_history(chat_history, user_input, response)  
+    return jsonify({"response": response}), 200
 
 # Main logic remains the same
 if __name__ == "__main__":
+    recently_retrieved_info = ""
+    retrieved = []
     MAX_HISTORY_LENGTH = 4
     load_dotenv()
     chat_history = []
     all_history = []
-    embed_model = FastEmbedEmbedding(model_name="BAAI/bge-base-en-v1.5")
+    embed_model = FastEmbedEmbedding(model_name="BAAI/bge-small-en-v1.5")
     groq_api_key = os.environ["GROQ_API_KEY"]
     llm1 = Groq(model="Llama3-70b-8192", api_key=groq_api_key)
     Settings.llm = llm1
@@ -306,7 +313,7 @@ if __name__ == "__main__":
         api_key=os.getenv("QDRANT_API_KEY"),
     )
     # Initialize vector store and storage context
-    vector_store = QdrantVectorStore(client=client, collection_name="chunk_collection")
+    vector_store = QdrantVectorStore(client=client, collection_name="newcollection")
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     # Build index from documents
     index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
@@ -318,5 +325,4 @@ if __name__ == "__main__":
         api_key=os.getenv("GROQ_API_KEY")
     )
 
-    chatbot()
-
+    app.run(debug=True)
