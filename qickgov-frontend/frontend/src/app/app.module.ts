@@ -15,7 +15,7 @@ import { BookmarkService } from './shared/bookmark.service';
 import { ReleaseDetailComponent } from './release-detail/release-detail.component';
 import { LoginService } from './login.service';
 import { EntityService } from './shared/entities.service';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { EntityComponent } from './entity/entity.component';
 import { PdfViewerComponent, PdfViewerModule } from 'ng2-pdf-viewer';
 import { UserPageComponent } from './user-page/user-page.component';
@@ -23,12 +23,13 @@ import { UpdateCoverComponent } from './update-cover/update-cover.component';
 import { HomePageCoverComponent } from './home-page-cover/home-page-cover.component';
 import { SearchFilterComponent } from './search-filter/search-filter.component';
 import { ChatbotComponent } from './chatbot/chatbot.component';
+import { AuthInterceptor } from './shared/auth.intercepter';
 
 const appRoutes: Routes = [
-  { path: 'user', component: MainPageComponent },
+  { path: 'home', component: MainPageComponent },
   { path: 'detail/:id', component: ReleaseDetailComponent },
   { path: 'entity/:name', component: EntityComponent },
-  { path: '', component: LoginComponent },
+  { path: 'login', component: LoginComponent },
   { path: 'update', component: UpdateCoverComponent },
   { path: 'latest', component: HomePageCoverComponent },
   { path: 'chatbot', component: ChatbotComponent },
@@ -64,6 +65,7 @@ const appRoutes: Routes = [
     LoginService,
     EntityService,
     PdfViewerComponent,
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
   ],
   bootstrap: [AppComponent],
 })

@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"log"
 	"quickgov-backend/database"
+	"quickgov-backend/middleware"
 	"quickgov-backend/model"
+
+	// "strings"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -34,8 +38,9 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Could not create user", "data": err.Error()})
 	}
 	bookmarks := model.Bookmark{
-		UserID: user.ID,
-		Topics: []string{},
+		UserID:   user.ID,
+		Topics:   model.StringArray{},
+		Articles: model.StringArray{},
 	}
 
 	if err = db.Create(&bookmarks).Error; err != nil {
@@ -46,32 +51,28 @@ func CreateUser(c *fiber.Ctx) error {
 }
 
 func GetSingleUser(c *fiber.Ctx) error {
-	db := database.DB.Db
-	var user model.User
-
-	// Create a variable to hold the request body
-	var req struct {
-		Email string `json:"email"` // Field to hold the user's email
+	claims, ok := c.Locals("claims").(*middleware.Claims)
+	if !ok {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
 	}
-
-	// Parse the JSON body into req
+	log.Println("Verified claims:", claims)
+	var req struct {
+		Email string `json:"email"`
+	}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "Invalid request", "data": nil})
 	}
-
-	// Find user by email
+	db := database.DB.Db
+	var user model.User
 	result := db.Where("email = ?", req.Email).First(&user)
 
-	// Check if user was found
 	if result.Error != nil {
-
 		if result.Error == gorm.ErrRecordNotFound {
 			return c.Status(404).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
 		}
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Database error", "data": nil})
 	}
 
-	// User found, respond with user data
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "User found", "data": user})
 }
 

@@ -58,7 +58,7 @@ func (a *StringArray) Scan(value interface{}) error {
 func (a StringArray) Value() (driver.Value, error) {
 	// Format as PostgreSQL array literal
 	if len(a) == 0 {
-		return "{}::text[]", nil // Return an empty array
+		return "{}", nil // Return an empty array without type casting
 	}
 	// Create a string representation of the array
 	var formattedArray string

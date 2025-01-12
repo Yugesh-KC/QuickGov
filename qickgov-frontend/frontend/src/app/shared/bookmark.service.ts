@@ -45,7 +45,7 @@ export class BookmarkService {
     return this.bookmarks;
   }
 
-  getBookMark() {
+  getBookMark(): BookMark[] {
     return this.bookmarks.slice();
   }
 

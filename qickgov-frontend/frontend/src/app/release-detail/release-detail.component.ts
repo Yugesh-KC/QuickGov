@@ -15,6 +15,7 @@ export class ReleaseDetailComponent implements OnInit, OnDestroy {
   release: Release | undefined;
   fullMinistryName: string | undefined;
   imageLocation: string | undefined;
+  isModalOpen = false;
   private paramSubscription: Subscription;
 
   chat: string = '';
@@ -35,6 +36,7 @@ export class ReleaseDetailComponent implements OnInit, OnDestroy {
         for (let release of this.releases) {
           if (release.id === releaseId) {
             this.release = release;
+            console.log(this.imageLocation);
             this.imageLocation = `assets/images/${release.location}`;
             this.fullMinistryName = this.ministryMappingService.getMinistryName(
               release.ministry
@@ -46,6 +48,13 @@ export class ReleaseDetailComponent implements OnInit, OnDestroy {
         console.log('Filtered Entity Releases:', this.release);
       });
     });
+  }
+  openModal() {
+    this.isModalOpen = true;
+  }
+
+  closeModal() {
+    this.isModalOpen = false;
   }
 
   ngOnDestroy() {

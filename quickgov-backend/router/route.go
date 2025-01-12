@@ -2,6 +2,7 @@ package router
 
 import (
 	"quickgov-backend/handler"
+	"quickgov-backend/middleware"
 	"quickgov-backend/scraper"
 
 	"github.com/gofiber/fiber/v2"
@@ -22,13 +23,9 @@ func SetupRoutes(app *fiber.App) {
 	})
 	api.Post("/summarize", handler.SummarizeArticles)
 
-	// ul.Get("/", handler.GetAllUsers)
-	ul.Post("/", handler.GetSingleUser)
 	ul.Post("/create/", handler.CreateUser)
-
-	bl.Get("/:user_id", handler.GetBookmarks)
-	bl.Patch("/:user_id", handler.UpdateBookmarkTopics)
-	bl.Get("/:user_id/articles", handler.GetBookmarkedArticles)
+	ul.Post("/login", handler.Login)
+	ul.Get("/id", middleware.AuthMiddleware(), handler.GetSingleUser)
 
 	al.Get("/", handler.GetAllArticles)
 	al.Get("/:ministry", handler.GetArticlesByMinistry)
@@ -38,7 +35,10 @@ func SetupRoutes(app *fiber.App) {
 
 	sl.Post("/", handler.CreateSession)
 	sl.Get("/", handler.FetchAllSessions)
-	// ul.Put("/:id")
-	// ul.Delete("/:id")
 
+	bl.Get("/:user_id", handler.GetBookmarks)
+	pBl := bl.Group("")
+	pBl.Use(middleware.AuthMiddleware())
+	pBl.Patch("/:user_id", handler.UpdateBookmarkTopics)
+	pBl.Get("/:user_id/articles", handler.GetBookmarkedArticles)
 }

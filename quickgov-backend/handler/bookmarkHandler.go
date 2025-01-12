@@ -2,6 +2,7 @@ package handler
 
 import (
 	"quickgov-backend/database"
+	"quickgov-backend/middleware"
 	"quickgov-backend/model"
 	"strings"
 
@@ -56,11 +57,16 @@ func UpdateBookmarkTopics(c *fiber.Ctx) error {
 }
 
 func GetBookmarkedArticles(c *fiber.Ctx) error {
-	db := database.DB.Db
-	userID := c.Params("user_id")
+	claims, ok := c.Locals("claims").(*middleware.Claims)
+	if !ok {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
+	}
 
+	userID := claims.Email
+
+	db := database.DB.Db
 	var bookmarks []model.Bookmark
-	if err := db.Where("user_id = ?", userID).Find(&bookmarks).Error; err != nil {
+	if err := db.Where("email = ?", userID).Find(&bookmarks).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Failed to fetch bookmarks", "data": err.Error()})
 	}
 

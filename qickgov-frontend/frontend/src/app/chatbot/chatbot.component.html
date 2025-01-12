@@ -1,12 +1,18 @@
 <app-navbar *ngIf="hasNav"></app-navbar>
 
 <!-- Chatbot Container with Adjusted Layout -->
-<div class="bg-white p-8 flex flex-col h-[calc(100vh-48px)]">
-  <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">AI Chatbot Model</h2>
+<div class="bg-white p-8 flex flex-col h-[calc(100vh-4rem)] justify-center items-center">
 
   <!-- Chat Display Area -->
   <div id="chat-box" class="p-4 rounded-lg flex-grow overflow-auto flex flex-col space-y-2">
-    <!-- Display the chat history -->
+    <!-- Show heading only when no messages -->
+    <div *ngIf="textArray.length === 0" class="flex flex-col items-center justify-center"> 
+      <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Hi, User</h2>
+      <h3 class="text-1xl font-bold text-gray-500 mb-1 text-center">You can ask me about your governmental inquiries about topics like</h3>
+      <h3 class="text-1xl font-bold text-gray-500 mb-2 text-center">Nepali Citizenship, Constitution, Labour Acts, Criminal Acts and many more</h3>
+
+    </div>
+
     <div *ngFor="let message of textArray" class="flex"
       [ngClass]="message.type === 'user' ? 'justify-end' : 'justify-start'">
       <div [ngClass]="{
@@ -19,16 +25,20 @@
     </div>
   </div>
 
-  <!-- Chat Input (Sticks to Bottom) -->
-  <div class="mt-auto relative">
-    <input id="chat-input" [(ngModel)]="chat" (keydown.enter)="onEnterText()" type="text"
-      placeholder="Type a message..."
-      class="w-full p-2 bg-gray-800 text-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10">
 
-    <!-- Arrow Icon -->
-    <svg (click)="onEnterText()" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-      class="absolute right-2 top-1/2 transform -translate-y-1/2 text-white cursor-pointer">
-      <path fill="currentColor" d="M10 17l5-5-5-5v10z" />
+  <!-- Chat Input (Sticks to Bottom) -->
+ <!-- Chat Input (Sticks to Bottom) -->
+<div class="mt-auto relative min-w-[25rem] max-w-[40rem] w-full mx-2 flex justify-center items-center">
+  <input id="chat-input" [(ngModel)]="chat" (keydown.enter)="onEnterText()" type="text"
+    placeholder="Type a message..."
+    class="w-full p-2 bg-gray-800 text-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 px-10">
+
+  <!-- ChatGPT-style Send Icon -->
+  <button (click)="onEnterText()" 
+    class="absolute right-2 top-1/2 transform -translate-y-1/2 hover:bg-gray-700 p-1 rounded-lg transition-all duration-200">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
+      class="h-6 w-6 text-white transform rotate-90">
+      <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-  </div>
+  </button>
 </div>

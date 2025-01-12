@@ -1,15 +1,18 @@
-<body (click)="onLatestExpand()" class="overflow-x-hidden overflow-y-auto relative">
-  <div class="bg-gray-200 p-6 shadow-md border border-gray-200 relative">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">Latest Notices & Releases</h2>
+<body (click)="onLatestExpand()" class="overflow-x-hidden relative">
+  <div class="bg-gray-200 h-full flex flex-col shadow-md border border-gray-200 relative">
+    <!-- Fixed Header -->
+    <h2 class="text-2xl font-bold text-gray-800 p-6 bg-gray-200 sticky top-0 z-10">Latest Notices & Releases</h2>
 
-    <!-- Grid layout for two items per row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <app-release *ngFor="let release of releases" [release]="release"></app-release>
+    <!-- Scrollable Grid Container -->
+    <div class="flex-1 overflow-y-auto p-6 pt-0">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <app-release *ngFor="let release of releases" [release]="release"></app-release>
+      </div>
     </div>
 
     <!-- Button at the bottom-right corner -->
     <!-- <button class="absolute bottom-10 right-10 text-gray-500 hover:text-gray-700">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="2  4" viewBox="0 0 24 24">
         <path fill="currentColor" d="M1.5 2h21v16H6.876L1.5 22.704zm2 2v14.296L6.124 16H20.5V4z" />
       </svg>
     </button> -->

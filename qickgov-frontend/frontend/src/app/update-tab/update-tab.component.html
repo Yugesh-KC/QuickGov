@@ -4,20 +4,27 @@
 
     <div *ngIf="hasUserId(); else loginPrompt" class="overflow-y-auto">
       <ng-container *ngIf="bookmarks.length > 0; else noBookmarks">
-        <div *ngFor="let bookmark of bookmarks" class="border p-4 mb-5 rounded-lg shadow-md">
-          <h1 class="text-xl font-semibold">{{ bookmark.topic }}</h1>
-          <hr class="my-2">
-          <div class="max-h-68 overflow-y-auto mt-2 pr-2">
-            <ng-container *ngIf="bookmark.articles.length > 0; else noUpdates">
-              <div *ngFor="let article of bookmark.articles">
-                <app-release [release]="article"></app-release>
-              </div>
-            </ng-container>
-            <ng-template #noUpdates>
-              <p class="text-gray-600">No updates on this topic.</p>
-            </ng-template>
+        <ng-container *ngFor="let bookmark of bookmarks">
+          <div class="mb-6">
+            <h1 class="text-xl font-semibold">{{ bookmark.topic }}</h1>
+            <hr class="my-2">
+            <div class="mt-2">
+              <ng-container *ngIf="bookmark.articles.length > 0; else noUpdates">
+                <!-- Mobile: Horizontal scroll, Desktop: Vertical scroll -->
+                <div class="md:max-h-68 md:overflow-y-auto overflow-x-auto flex md:block md:whitespace-normal scrollbar-hide">
+                  <div class="flex md:block space-x-4 md:space-x-0 md:space-y-4">
+                    <div *ngFor="let article of bookmark.articles" class="w-[300px] md:w-full flex-shrink-0">
+                      <app-release [release]="article"></app-release>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #noUpdates>
+                <p class="text-gray-600">No updates on this topic.</p>
+              </ng-template>
+            </div>
           </div>
-        </div>
+        </ng-container>
       </ng-container>
       <ng-template #noBookmarks>
         <div class="text-center text-gray-600 mt-4">
@@ -33,3 +40,13 @@
     </ng-template>
   </div>
 </body>
+
+<style>
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>
