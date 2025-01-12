@@ -19,7 +19,7 @@ def generate_related_questions(question):
    
     related_questions_prompt = PromptTemplate(
         template="""You are an assistant that generates rephrasings and similar variations of the user's question.
-        Create 15 variations of the question that use synonyms, alternate phrasing, or very slight expansions. Use synonyms for the keywords too.
+        Create 5 variations of the question that use synonyms, alternate phrasing, or very slight expansions. Use synonyms for the keywords too.
         The questions should remain closely related in context and meaning. Avoid introducing unrelated or different topics.Phrase the question in such a way that its answer can be found in different legal documents in Nepal.
 
         Original Question: {question}
@@ -85,17 +85,19 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
 
         # Check if the answer is satisfactory
         if not any(phrase in generation.lower() for phrase in disallowed_phrases):
+            recently_retrieved_info =docs 
+            print(recently_retrieved_info)
                # For debugging
-            return generation  
+            return recently_retrieved_info, generation  
 
         # Log progress (optional)
         # print(f"Attempt {idx + 1}: No satisfactory answer found.")
 
         # Stop after 5 attempts
-        if idx == 16:
+        if idx == 9:
             break
 
-    return "The context cannot provide a satisfactory answer to the query."
+    return "", "Sorry, the context cannot provide a satisfactory answer to your query."
 def add_to_history(chat_history, user_message, assistant_response):
     # Append user message and assistant response to history
     chat_history.append(f"User: {user_message}")
@@ -113,34 +115,84 @@ def add_to_history(chat_history, user_message, assistant_response):
 
 
 
-def check_context(text, user_query,chat_history):
+def check_context(text, user_query,chat_history, recently_retrieved_info):
+    print("Retrieved info:", recently_retrieved_info)
   
+   
     decision_prompt = PromptTemplate(
-    template="""You are an assistant determining whether to retrieve additional context from a database. 
-    Carefully analyze the user's question, press release text and the provided chat history to make your decision.
+    template=""" Determine if additional context is needed.  
 
-    Respond with:
-    - "no" if the question can be answered fully and accurately using the information available in the press release text or the chat history. This includes situations where the user is asking for elaboration, clarification, or explanation of a point already mentioned.
-    - "yes" if the  press release or the chat history does not contain sufficient information to accurately answer the user's question. This includes situations where the user's question introduces a new topic, requires factual knowledge not found in the chat history or the press release, or is unrelated to prior discussions.
+**Steps:**  
+1. Check if the question is related to Nepal's law, constitution, or legal matters or related to chat's history or about different incidents or news.  
+   - If unrelated, respond: "Decision: no, Expanded Question: I cannot answer questions unrelated to Nepal's law or legal matters."  
 
-    Ensure your decision is based only on the question, the provided press release and the  chat history.
-    Press Release: {press_release}
+2. Check the press release for the answer.  
+3. If not found, check retrieved info and chat history.  
+4. If the answer is found in any source, respond "no."  
+5. If the answer is not found, respond "yes." Expand the question only if  it is unclear or incomplete and is absolutely necessary like if it is in the forms like"elaborate," "what is this?", etc. If the question is complete in itself donot try to expand.Do not tie unrelated questions to the press release.  
+6. Do not ever relate the unrelated question asked with the given press release.
 
-    Question: {question}
-    Chat History: {chat_history}
-    Decision (yes or no):"""
+**Input:**  
+Press Release: {press_release}  
+Retrieved Info: {recently_retrieved_info}  
+Question: {question}  
+Chat History: {chat_history}  
+
+**Output:**  
+Decision: [yes/no]  
+Expanded Question: [original question OR expanded version if needed]"""
 )
+
+
+
     decision_chain = decision_prompt | llm | StrOutputParser()
-    decision = decision_chain.invoke({"question": user_query, "chat_history": chat_history, "press_release": text}).strip().lower()
-    # print(decision)
+    response = decision_chain.invoke({"question": user_query, "chat_history": chat_history, "recently_retrieved_info": recently_retrieved_info, "press_release":text}).strip()
+    print(response)
+
+    lines = response.split("\n")
+    decision = None
+    expanded_question = None
+
+    for line in lines:
+        if line.startswith("Decision:"):
+            decision = line.replace("Decision:", "").strip().lower()
+        elif line.startswith("Expanded Question:"):
+            expanded_question = line.replace("Expanded Question:", "").strip()
+
+
+    print(decision)
     
-    return decision == "yes"
+    return decision == "yes", expanded_question
 
 
 def bot(chat_history = []):
-    text = get_text()
+    text = """ Government of Nepal
+
+Letter Number:- Singhdarbar,
+Received Letter Number and Date:- Kathmandu, Nepal.
+Chane.:- 2
+
+Date 2079/02/23 at 08:50 in the morning, Asmita Tharu, approximately 41 years old, a resident of Ward No. 2, Madhuwan Municipality, Bardiya district, was seriously injured in the Sonha forest. Sonha While sitting under the shade of a tree while plowing a field about 100 meters south of his house, a tiger attacked him from behind. which was sent to Nepalgunj for treatment.
+
+Various demands including control of tiger attacks and provision of wire mesh were made by the locals and the Postal Highway-section was blocked. At 3:45 pm, a team from Bardia National Park including rangers and security personnel was mobilized to the scene to control the tiger.
+
+As the security personnel were coordinating to open the blocked highway, the situation worsened when an angry mob attacked the security personnel at around 6:15 pm. Injured when a bullet hit her. She died in hospital during treatment. In this event, 20 security personnel including Nepal Police and Armed Police Force, Nepal have also been injured. In addition, 1 local resident was injured and is undergoing treatment at Nepalgunj Nursing Home.
+
+In relation to the incident, a committee has been constituted under the chairmanship of Mr. Hari Prasad Ghimire, Joint Secretary, Ministry of Home Affairs to conduct an on-site investigation and submit a report within 7 days. It is requested to inform all concerned for information.
+
+Here
+
+Mr. Hari Prasad Ghimire, Joint Secretary, Ministry of Home Affairs -Convenor
+Mr. Beda Kumar Dhakal, Deputy Director General, Department of National Parks and Wildlife Conservation -Member
+Mr. Krishna Koirala, Superintendent of Police, Nepal Police -Member
+Mr. Vikas Pandey, Deputy Director of Research, National Investigation Department -Member
+Mr. Dhruv Bahadur Khadka, Under Secretary, Ministry of Home Affairs -Member
+
+Date: 2079/02/24
+Joint Secretary/ Spokesperson"""
     # print(type(text))
     # print(text)
+    recently_retrieved_info= ""
     while True:
         user_input = input("You: ")
         if user_input.lower() == "exit":
@@ -148,7 +200,7 @@ def bot(chat_history = []):
             break
         
         # Generate response based on the current user input
-        response = llm_output(text,user_input, chat_history)
+        recently_retrieved_info, response = llm_output(text,user_input, chat_history, recently_retrieved_info)
         
         # Update chat history
         chat_history = add_to_history(chat_history, user_input, response)
@@ -159,36 +211,43 @@ def bot(chat_history = []):
     return chat_history
 
 
-def llm_output(text, user_query, chat_history):
-    decision_to_rag = check_context(text, user_query, chat_history)
+def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""):
+    decision_to_rag, expanded_query = check_context(text, user_query, chat_history, recently_retrieved_info)
 
-    if decision_to_rag:
-        generation = iterative_retrieval_and_answer(user_query, chat_history)
+    if decision_to_rag and expanded_query:
+        recently_retrieved_info,generation = iterative_retrieval_and_answer(expanded_query, chat_history)
         print(f"Assistant: {generation}")
         # Retrieve context from the vector database
-        return generation
+        return recently_retrieved_info, generation
+  
+        
+    if expanded_query.startswith("I cannot answer"):
+        generation = expanded_query
     else:
-        generation_prompt = PromptTemplate(
-        template="""You are an assistant designed to answer questions based on previous interactions with the user.
-        Use the provided chat history and the press release to understand the context and provide a relevant response. 
-        If the chat history or the press release alone doesn’t provide enough information to answer the question accurately, 
-        state that you don't know the answer rather than guessing or inventing information. Give a concise answer.
-        Press Release:
-        {text}
+            generation_prompt = PromptTemplate(
+            template="""You are an assistant designed to answer questions based on previous interactions with the user.
+            Use the provided chat history, the recently retrieved infoand the press release to understand the context and provide a relevant response. 
+            If the chat history or the press release or the recently retreived  info alone doesn’t provide enough information to answer the question accurately, 
+            state that you don't know the answer rather than guessing or inventing information. Give a concise answer.
+            Press Release:
+            {text}
 
-        Chat History:
-        {chat_history}
+            Chat History:
+            {chat_history}
 
-        User's Question:
-        {user_query}
+            Recently Retrieved Info:
+            {recently_retrieved_info}
 
-        Answer:"""
-        )
-        rag_chain = generation_prompt | llm | StrOutputParser()
-        generation = rag_chain.invoke({"text":text, "user_query": user_query, "chat_history": chat_history})
-        print(f"Assistant: {generation}") 
+            User's Question:
+            {user_query}
+
+            Answer:"""
+            )
+            rag_chain = generation_prompt | llm | StrOutputParser()
+            generation = rag_chain.invoke({"text":text, "user_query": user_query, "chat_history": chat_history, "recently_retrieved_info": recently_retrieved_info})
+    print(f"Assistant: {generation}") 
       
-        return generation
+    return recently_retrieved_info, generation
     
 def get_text():
     release = input("Enter the release about which you want to ask: ")
@@ -218,7 +277,7 @@ if __name__ == "__main__":
     gemini_api_key = os.getenv("GEMINI_API_KEY")
     chat_history = []
     all_history =[]
-    embed_model = FastEmbedEmbedding(model_name="BAAI/bge-small-en-v1.5")
+    embed_model = FastEmbedEmbedding(model_name="BAAI/bge-base-en-v1.5")
     groq_api_key = os.environ["GROQ_API_KEY"]
     llm1 = Groq(model="Llama3-70b-8192", api_key=groq_api_key)
     Settings.llm = llm1
@@ -229,7 +288,7 @@ if __name__ == "__main__":
         api_key=os.getenv("QDRANT_API_KEY"),
     )
     # Initialize vector store and storage context
-    vector_store = QdrantVectorStore(client=client, collection_name="newcollection")
+    vector_store = QdrantVectorStore(client=client, collection_name="chunk_collection")
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     # Build index from documents
     index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
