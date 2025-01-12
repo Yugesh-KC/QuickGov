@@ -29,7 +29,7 @@ export class HomePageComponent implements OnInit {
   }
 
   onLatestExpand() {
-    this.router.navigate(['/latest']);
+    // this.router.navigate(['/latest']);
   }
 
   toggleHighlight(button: string) {

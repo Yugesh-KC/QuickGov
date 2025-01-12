@@ -72,7 +72,10 @@ export class ReleaseDetailComponent implements OnInit, OnDestroy {
       this.textArray.push({ text: this.chat, type: 'user' });
 
       // Prepare the request body
-      const body = { message: this.chat };
+      const body = {
+        message: this.chat,
+        image: 'qickgov-frontend/frontend/src/' + this.imageLocation,
+      };
       const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
       this.chat = '';
       // Make the POST request to the chatbot API

@@ -172,12 +172,13 @@ Expanded Question: [original question OR expanded version if needed]"""
 
 @app.route('/chat', methods=['POST'])
 def bot(chat_history = []):
-    image_path = input("Enter your image path: ")
-    text = get_text(image_path, gemini_api_key)
+
     # print(type(text))
     # print(text)
     recently_retrieved_info = ""
-    user_input = request.json.get('message')  # Get the message from the request
+    user_input = request.json.get('message')
+    image_path = request.json.get('image') 
+    text = get_text(image_path, gemini_api_key) 
         # user_input = input("You: ")
     if user_input.lower() == "exit":
         return jsonify({"response": "Goodbye!"}), 200
