@@ -56,15 +56,10 @@ func GetSingleUser(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
 	}
 	log.Println("Verified claims:", claims)
-	var req struct {
-		Email string `json:"email"`
-	}
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "Invalid request", "data": nil})
-	}
+
 	db := database.DB.Db
 	var user model.User
-	result := db.Where("email = ?", req.Email).First(&user)
+	result := db.Where("id = ?", claims.ID).First(&user)
 
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
@@ -72,6 +67,8 @@ func GetSingleUser(c *fiber.Ctx) error {
 		}
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Database error", "data": nil})
 	}
+
+	// socket.SocketHub.SendToUser(claims.ID, []byte("This is me silly."))
 
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "User found", "data": user})
 }

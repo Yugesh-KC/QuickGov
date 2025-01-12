@@ -7,10 +7,17 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 func GetBookmarks(c *fiber.Ctx) error {
-	userID := c.Params("user_id")
+	claims, ok := c.Locals("claims").(*middleware.Claims)
+	if !ok {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
+	}
+	userID := claims.ID
+
+	log.Infof("UserID from handler: %s", userID)
 
 	var bookmarks []model.Bookmark
 	if err := database.DB.Db.Where("user_id = ?", userID).Find(&bookmarks).Error; err != nil {
@@ -62,11 +69,11 @@ func GetBookmarkedArticles(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
 	}
 
-	userID := claims.Email
+	userID := claims.ID
 
 	db := database.DB.Db
 	var bookmarks []model.Bookmark
-	if err := db.Where("email = ?", userID).Find(&bookmarks).Error; err != nil {
+	if err := db.Where("id = ?", userID).Find(&bookmarks).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Failed to fetch bookmarks", "data": err.Error()})
 	}
 

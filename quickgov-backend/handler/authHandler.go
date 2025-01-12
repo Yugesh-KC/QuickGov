@@ -13,8 +13,8 @@ import (
 
 func GenerateToken(user model.User) (string, error) {
 	claims := jwt.MapClaims{
-		"email": user.Email,
-		"exp":   time.Now().Add(time.Hour * 72).Unix(),
+		"id":  user.ID,
+		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	}
 
 	secretKey := config.Config("JWT_SECRET")

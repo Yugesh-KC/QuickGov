@@ -4,13 +4,53 @@ import (
 	"quickgov-backend/config"
 	"strings"
 
+	"github.com/google/uuid"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/websocket/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type Claims struct {
-	Email string `json:"email"`
+	ID uuid.UUID `gorm:"type:uuid;primaryKey"`
 	jwt.RegisteredClaims
+}
+
+func SocketAuthMiddleware() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if websocket.IsWebSocketUpgrade(c) {
+			tokenString := c.Query("token")
+			log.Infof("WS Token: %s", tokenString)
+			if tokenString == "" {
+				tokenString = c.Get("Authorization")
+				tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+			}
+
+			if tokenString == "" {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"status":  "error",
+					"message": "Unauthorized",
+				})
+			}
+
+			claims := &Claims{}
+			token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+				return []byte(config.Config("JWT_SECRET")), nil
+			})
+
+			if err != nil || !token.Valid {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"status":  "error",
+					"message": "Invalid token",
+				})
+			}
+
+			c.Locals("claims", claims)
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
+	}
 }
 
 func AuthMiddleware() fiber.Handler {
@@ -22,7 +62,6 @@ func AuthMiddleware() fiber.Handler {
 		}
 
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-
 		claims := &Claims{}
 		tkn, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(jwtKey), nil

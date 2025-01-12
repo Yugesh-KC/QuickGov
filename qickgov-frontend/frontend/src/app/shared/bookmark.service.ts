@@ -14,16 +14,7 @@ export class BookmarkService {
   constructor(private http: HttpClient, private userService: UserService) {}
 
   initializeBookmarks(): Observable<BookMark[]> {
-    const userId = this.userService.getUserId();
-    if (!userId) {
-      console.error('User ID is not set');
-      return new Observable<BookMark[]>((observer) => {
-        observer.next([]);
-        observer.complete();
-      });
-    }
-
-    const url = `http://localhost:8080/api/bookmark/${userId}/articles`;
+    const url = `http://localhost:8080/api/bookmark/articles`;
 
     return this.http.get<{ data: BookMark[] }>(url).pipe(
       map((response) => {
@@ -52,7 +43,6 @@ export class BookmarkService {
   addBookmark(bookmark: BookMark) {
     this.bookmarks.push(bookmark);
   }
-  // addBookmark() { }
   removeBookmark(id: number) {
     this.bookmarks.splice(id, 1);
   }

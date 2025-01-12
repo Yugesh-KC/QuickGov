@@ -23,13 +23,13 @@ export class AuthService {
       tap((response: any) => {
         if (response.status === 'success' && response.token) {
           this.storeToken(response.token);
-          this.checkUserId(response.token).subscribe((userId) => {
-            if (userId) {
-              this.userService.setUserId(userId);
-            } else {
-              console.log('User ID not found');
-            }
-          });
+          // this.checkUserId(response.token).subscribe((userId) => {
+          //   if (userId) {
+          //     this.userService.setUserId(userId);
+          //   } else {
+          //     console.log('User ID not found');
+          //   }
+          // });
         }
       })
     );
@@ -70,7 +70,7 @@ export class AuthService {
 
   checkUserId(token: string): Observable<string> {
     return this.http
-      .get(`${this.apiUrl}/api/user/id`, {
+      .get(`${this.apiUrl}/user/id`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
