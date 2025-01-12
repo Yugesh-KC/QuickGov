@@ -48,7 +48,7 @@ def generate_related_questions(question):
             clean_questions.append(line.lstrip("12345. ").strip())  # Remove numbering and extra spaces
     # print(clean_questions)
     
-    # print(clean_questions)
+    print(clean_questions)
     return clean_questions
 
 def iterative_retrieval_and_answer(question, chat_history=[]):
@@ -70,8 +70,8 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
         
         
         docs= "\n".join([d.text for d in docs])  # Combine document texts
-        # print("For one DOc---------------------")
-        # print(docs)
+        print("For one DOc---------------------")
+        print(docs)
 
 
 
@@ -86,8 +86,8 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
         )
         generation_chain = generation_prompt | llm | StrOutputParser()
         generation = generation_chain.invoke({"context": docs, "question": question}).strip()
-        # print(query)
-        # print(generation)
+        print(query)
+        print(generation)
 
         # Check if the answer is satisfactory
         if not any(phrase in generation.lower() for phrase in disallowed_phrases):
@@ -123,31 +123,26 @@ def add_to_history(chat_history, user_message, assistant_response):
 
 def check_context(text, user_query,chat_history, recently_retrieved_info):
     print("Retrieved info:", recently_retrieved_info)
-  
+    print(text)
    
     decision_prompt = PromptTemplate(
-    template=""" Determine if additional context is needed.  
-
-**Steps:**  
-1. Check if the question is related to the press release text given below,  Nepal's law, constitution, or legal matters or related to chat's history or about different incidents or news.  
-   - If unrelated, respond: "Decision: no, Expanded Question: I cannot answer questions unrelated to Nepal's law or legal matters."  
-
-2. Check the press release for the answer.  
-3. If not found, check retrieved info and chat history.  
-4. If the answer is found in any source, respond "no."  
-5. If the answer is not found, respond "yes." Expand the question only if  it is unclear or incomplete and is absolutely necessary like if it is in the forms like"elaborate," "what is this?", etc. If the question is complete in itself donot try to expand.Do not tie unrelated questions to the press release.  
-6. Do not ever relate the unrelated question asked with the given press release.
-
-**Input:**  
-Press Release: {press_release}  
-Retrieved Info: {recently_retrieved_info}  
-Question: {question}  
-Chat History: {chat_history}  
-
-**Output:**  
-Decision: [yes/no]  
-Expanded Question: [original question OR expanded version if needed]"""
+    template="""You are an assistant determining whether to retrieve additional context from a database. 
+    Carefully analyze the user's question, press release text, recently retrieved info and the provided chat history to make your decision.
+    Respond with:
+    - "no" if the question can be answered using the information available in the press release text or the chat history or retireved context. This includes situations where the user is asking for elaboration, clarification, or explanation of a point already mentioned.
+    - "yes" if the  press release or the chat history does not contain sufficient information to accurately answer the user's question. This includes situations where the user's question introduces a new topic, requires factual knowledge not found in the chat history or the press release, or recently retireved info or is unrelated to prior discussions.
+    Ensure your decision is based only on the question, the provided press release and the  chat history.
+    Give the original question too.
+   
+    Press Release: {press_release}
+    Question: {question}
+    Chat History: {chat_history}
+    Recently Retrieved Info : {recently_retrieved_info}
+    Decision (yes or no):
+    Question: [original question]"""
+    
 )
+
 
 
 
@@ -162,17 +157,17 @@ Expanded Question: [original question OR expanded version if needed]"""
     for line in lines:
         if line.startswith("Decision:"):
             decision = line.replace("Decision:", "").strip().lower()
-        elif line.startswith("Expanded Question:"):
-            expanded_question = line.replace("Expanded Question:", "").strip()
+        elif line.startswith("Question:"):
+            expanded_question = line.replace("Question:", "").strip()
 
 
     print(decision)
+    
     
     return decision == "yes", expanded_question
 
 @app.route('/chat', methods=['POST'])
 def bot(chat_history = []):
-
     # print(type(text))
     # print(text)
     recently_retrieved_info = ""
@@ -208,10 +203,13 @@ def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""
         print(f"Assistant: {generation}")
         # Retrieve context from the vector database
         return recently_retrieved_info, generation
+    
   
         
-    if expanded_query.startswith("I cannot answer"):
-        generation = expanded_query
+    if expanded_query:
+        if expanded_query.startswith("I cannot answer"):
+            generation = expanded_query
+        
     else:
             generation_prompt = PromptTemplate(
             template="""You are an assistant designed to answer questions based on previous interactions with the user.
