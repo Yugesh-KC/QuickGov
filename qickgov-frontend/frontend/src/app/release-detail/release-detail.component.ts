@@ -80,7 +80,7 @@ export class ReleaseDetailComponent implements OnInit, OnDestroy {
       this.chat = '';
       // Make the POST request to the chatbot API
       this.http
-        .post<{ response: string }>('http://localhost:4949/chat', body, {
+        .post<{ response: string }>('http://localhost:5000/chat', body, {
           headers,
         })
         .subscribe(
