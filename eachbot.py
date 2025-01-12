@@ -100,7 +100,7 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
         # print(f"Attempt {idx + 1}: No satisfactory answer found.")
 
         # Stop after 5 attempts
-        if idx == 9:
+        if idx == 4:
             break
 
     return "", "Sorry, the context cannot provide a satisfactory answer to your query."
@@ -129,7 +129,7 @@ def check_context(text, user_query,chat_history, recently_retrieved_info):
     template="""You are an assistant determining whether to retrieve additional context from a database. 
     Carefully analyze the user's question, press release text, recently retrieved info and the provided chat history to make your decision.
     Respond with:
-    - "no" if the question can be answered using the information available in the press release text or the chat history or retireved context. This includes situations where the user is asking for elaboration, clarification, or explanation of a point already mentioned.
+    - "no" if the question is related to the notice/press release , if the question can be answered using the information available in the press release text or the chat history or retireved context. This includes situations where the user is asking for elaboration, clarification, or explanation of a point already mentioned.
     - "yes" if the  press release or the chat history does not contain sufficient information to accurately answer the user's question. This includes situations where the user's question introduces a new topic, requires factual knowledge not found in the chat history or the press release, or recently retireved info or is unrelated to prior discussions.
     Ensure your decision is based only on the question, the provided press release and the  chat history.
     Give the original question too.
@@ -226,11 +226,11 @@ def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""
 
             Answer:"""
             )
-            rag_chain = generation_prompt | llm | StrOutputParser()
-            generation = rag_chain.invoke({"text":text, "user_query": user_query, "chat_history": chat_history, "recently_retrieved_info": recently_retrieved_info})
-            print(f"Assistant: {generation}") 
+        rag_chain = generation_prompt | llm | StrOutputParser()
+        generation = rag_chain.invoke({"text":text, "user_query": user_query, "chat_history": chat_history, "recently_retrieved_info": recently_retrieved_info})
+        print(f"Assistant: {generation}") 
       
-            return recently_retrieved_info, generation
+        return recently_retrieved_info, generation
     
 def get_text(image_path, gemini_api_key):
     try:
