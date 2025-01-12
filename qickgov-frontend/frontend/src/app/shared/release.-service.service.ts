@@ -10,15 +10,15 @@ import { Release } from './release.model';
 export class ReleaseService {
   releaseDetail = new EventEmitter<string>();
   private apiUrl = 'http://localhost:8080/api/article/';
-  private releases: Release[] = []; // Cache for fetched releases
-  private isFetching: boolean = false; // Flag to prevent multiple fetches
+  private releases: Release[] = [];
+  private isFetching: boolean = false;
 
   constructor(private http: HttpClient) {}
 
   getReleases(): Observable<Release[]> {
     if (this.releases.length > 0) {
       console.log('Returning cached releases:', this.releases);
-      return of(this.releases); // Return cached data as an observable
+      return of(this.releases);
     }
 
     if (!this.isFetching) {
@@ -27,6 +27,12 @@ export class ReleaseService {
         map((response) => {
           console.log('API response:', response);
           if (Array.isArray(response.data)) {
+            const types = [
+              'notice',
+              'release',
+              'progressReport',
+              'publication',
+            ];
             this.releases = response.data
               .filter(
                 (release) => release.article && release.article.trim() !== ''
@@ -39,11 +45,12 @@ export class ReleaseService {
                     release.title,
                     release.location,
                     release.article,
-                    release.ministry
+                    release.ministry,
+                    types[Math.floor(Math.random() * types.length)] // Randomly assign type
                   )
               );
           } else {
-            this.releases = []; // Ensure releases is an array
+            this.releases = [];
           }
           this.isFetching = false;
           console.log('Filtered releases from API:', this.releases);
@@ -52,11 +59,11 @@ export class ReleaseService {
         catchError((error) => {
           this.isFetching = false;
           console.error('Error fetching releases:', error);
-          return of([]); // Return an empty array in case of error
+          return of([]);
         })
       );
     } else {
-      return of([]); // Return an empty array if a fetch is already in progress
+      return of([]);
     }
   }
 }

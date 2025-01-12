@@ -10,8 +10,14 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 import qdrant_client
 
 from image_to_english import image_to_english
-import os
-from dotenv import load_dotenv
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+
+app = Flask(__name__)
+CORS(app)
+
+
 def generate_related_questions(question):
     """
     Generate related questions from the user's query using the LLM.
@@ -42,7 +48,7 @@ def generate_related_questions(question):
             clean_questions.append(line.lstrip("12345. ").strip())  # Remove numbering and extra spaces
     # print(clean_questions)
     
-    # print(clean_questions)
+    print(clean_questions)
     return clean_questions
 
 def iterative_retrieval_and_answer(question, chat_history=[]):
@@ -52,6 +58,7 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
     # Generate related questions
     related_questions = generate_related_questions(question)
     related_questions.insert(0, question)  # Include the original question as the first query
+    print(related_questions)
     disallowed_phrases = [
     "i don’t know", "i don't know", 
     "cannot provide an answer", 
@@ -59,13 +66,17 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
 ]
 
     for idx, query in enumerate(related_questions):
+        print(query)
+        if query == None:
+            query = ""
+
         # Retrieve context for the current query
         docs = retriever.retrieve(query+  " infer any info that you can get related to this query")
         
         
         docs= "\n".join([d.text for d in docs])  # Combine document texts
-        # print("For one DOc---------------------")
-        # print(docs)
+        print("For one DOc---------------------")
+        print(docs)
 
 
 
@@ -80,8 +91,8 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
         )
         generation_chain = generation_prompt | llm | StrOutputParser()
         generation = generation_chain.invoke({"context": docs, "question": question}).strip()
-        # print(query)
-        # print(generation)
+        print(query)
+        print(generation)
 
         # Check if the answer is satisfactory
         if not any(phrase in generation.lower() for phrase in disallowed_phrases):
@@ -117,31 +128,26 @@ def add_to_history(chat_history, user_message, assistant_response):
 
 def check_context(text, user_query,chat_history, recently_retrieved_info):
     print("Retrieved info:", recently_retrieved_info)
-  
+    print(text)
    
     decision_prompt = PromptTemplate(
-    template=""" Determine if additional context is needed.  
-
-**Steps:**  
-1. Check if the question is related to Nepal's law, constitution, or legal matters or related to chat's history or about different incidents or news.  
-   - If unrelated, respond: "Decision: no, Expanded Question: I cannot answer questions unrelated to Nepal's law or legal matters."  
-
-2. Check the press release for the answer.  
-3. If not found, check retrieved info and chat history.  
-4. If the answer is found in any source, respond "no."  
-5. If the answer is not found, respond "yes." Expand the question only if  it is unclear or incomplete and is absolutely necessary like if it is in the forms like"elaborate," "what is this?", etc. If the question is complete in itself donot try to expand.Do not tie unrelated questions to the press release.  
-6. Do not ever relate the unrelated question asked with the given press release.
-
-**Input:**  
-Press Release: {press_release}  
-Retrieved Info: {recently_retrieved_info}  
-Question: {question}  
-Chat History: {chat_history}  
-
-**Output:**  
-Decision: [yes/no]  
-Expanded Question: [original question OR expanded version if needed]"""
+    template="""You are an assistant determining whether to retrieve additional context from a database. 
+    Carefully analyze the user's question, press release text, recently retrieved info and the provided chat history to make your decision.
+    Respond with:
+    - "no" if the question is related to the notice/press release, eg:the dates of the release who released it, etc or  the question can be answered using the information available in the press release text or the chat history or retireved context. This includes situations where the user is asking for elaboration, clarification, or explanation of a point already mentioned.
+    - "yes" if the  press release or the chat history does not contain sufficient information to accurately answer the user's question. This includes situations where the user's question introduces a new topic, requires factual knowledge not found in the chat history or the press release, or recently retireved info or is unrelated to prior discussions.
+    Ensure your decision is based only on the question, the provided press release and the  chat history.
+    Give the original question too.
+   
+    Press Release: {press_release}
+    Question: {question}
+    Chat History: {chat_history}
+    Recently Retrieved Info : {recently_retrieved_info}
+    Decision (yes or no):
+    Question: [original question]"""
+    
 )
+
 
 
 
@@ -156,78 +162,60 @@ Expanded Question: [original question OR expanded version if needed]"""
     for line in lines:
         if line.startswith("Decision:"):
             decision = line.replace("Decision:", "").strip().lower()
-        elif line.startswith("Expanded Question:"):
-            expanded_question = line.replace("Expanded Question:", "").strip()
+        elif line.startswith("Question:"):
+            expanded_question = line.replace("Question:", "").strip()
 
 
     print(decision)
     
+    
     return decision == "yes", expanded_question
 
-
+@app.route('/chat', methods=['POST'])
 def bot(chat_history = []):
-    text = """ Government of Nepal
-
-Letter Number:- Singhdarbar,
-Received Letter Number and Date:- Kathmandu, Nepal.
-Chane.:- 2
-
-Date 2079/02/23 at 08:50 in the morning, Asmita Tharu, approximately 41 years old, a resident of Ward No. 2, Madhuwan Municipality, Bardiya district, was seriously injured in the Sonha forest. Sonha While sitting under the shade of a tree while plowing a field about 100 meters south of his house, a tiger attacked him from behind. which was sent to Nepalgunj for treatment.
-
-Various demands including control of tiger attacks and provision of wire mesh were made by the locals and the Postal Highway-section was blocked. At 3:45 pm, a team from Bardia National Park including rangers and security personnel was mobilized to the scene to control the tiger.
-
-As the security personnel were coordinating to open the blocked highway, the situation worsened when an angry mob attacked the security personnel at around 6:15 pm. Injured when a bullet hit her. She died in hospital during treatment. In this event, 20 security personnel including Nepal Police and Armed Police Force, Nepal have also been injured. In addition, 1 local resident was injured and is undergoing treatment at Nepalgunj Nursing Home.
-
-In relation to the incident, a committee has been constituted under the chairmanship of Mr. Hari Prasad Ghimire, Joint Secretary, Ministry of Home Affairs to conduct an on-site investigation and submit a report within 7 days. It is requested to inform all concerned for information.
-
-Here
-
-Mr. Hari Prasad Ghimire, Joint Secretary, Ministry of Home Affairs -Convenor
-Mr. Beda Kumar Dhakal, Deputy Director General, Department of National Parks and Wildlife Conservation -Member
-Mr. Krishna Koirala, Superintendent of Police, Nepal Police -Member
-Mr. Vikas Pandey, Deputy Director of Research, National Investigation Department -Member
-Mr. Dhruv Bahadur Khadka, Under Secretary, Ministry of Home Affairs -Member
-
-Date: 2079/02/24
-Joint Secretary/ Spokesperson"""
     # print(type(text))
     # print(text)
-    recently_retrieved_info= ""
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == "exit":
-            print("Goodbye!")
-            break
+    recently_retrieved_info = ""
+    user_input = request.json.get('message')
+    image_path = request.json.get('image') 
+    text = get_text(image_path, gemini_api_key) 
+        # user_input = input("You: ")
+    if user_input.lower() == "exit":
+        return jsonify({"response": "Goodbye!"}), 200
         
         # Generate response based on the current user input
-        recently_retrieved_info, response = llm_output(text,user_input, chat_history, recently_retrieved_info)
+    recently_retrieved_info, response = llm_output(text,user_input, chat_history, recently_retrieved_info)
         
         # Update chat history
-        chat_history = add_to_history(chat_history, user_input, response)
+    chat_history = add_to_history(chat_history, user_input, response)
+    return jsonify({"response": response}), 200
+
+
+        
+        # Generate response based on the current user input
+
         
         # Print or log the chat history
         # print(chat_history)
-        
-    return chat_history
+ 
 
 
 def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""):
     decision_to_rag, expanded_query = check_context(text, user_query, chat_history, recently_retrieved_info)
-
-    if decision_to_rag and expanded_query:
+    
+    if decision_to_rag:
         recently_retrieved_info,generation = iterative_retrieval_and_answer(expanded_query, chat_history)
         print(f"Assistant: {generation}")
         # Retrieve context from the vector database
         return recently_retrieved_info, generation
+    
   
         
-    if expanded_query.startswith("I cannot answer"):
-        generation = expanded_query
     else:
             generation_prompt = PromptTemplate(
             template="""You are an assistant designed to answer questions based on previous interactions with the user.
-            Use the provided chat history, the recently retrieved infoand the press release to understand the context and provide a relevant response. 
-            If the chat history or the press release or the recently retreived  info alone doesn’t provide enough information to answer the question accurately, 
+            Use the provided chat history, the recently retrieved info and the press release to understand the context and provide a relevant response. 
+            If the chat history or the press release or the recently retrieved info alone doesn’t provide enough information to answer the question accurately, 
             state that you don't know the answer rather than guessing or inventing information. Give a concise answer.
             Press Release:
             {text}
@@ -245,27 +233,28 @@ def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""
             )
             rag_chain = generation_prompt | llm | StrOutputParser()
             generation = rag_chain.invoke({"text":text, "user_query": user_query, "chat_history": chat_history, "recently_retrieved_info": recently_retrieved_info})
-    print(f"Assistant: {generation}") 
+            print(f"Assistant: {generation}") 
       
-    return recently_retrieved_info, generation
+            return recently_retrieved_info, generation
     
-def get_text():
-    release = input("Enter the release about which you want to ask: ")
+def get_text(image_path, gemini_api_key):
+    try:
+        # Ensure the image path exists
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Image file not found: {image_path}")
+        
+        # Extract text using the image_to_english function
+        text = image_to_english(image_path, gemini_api_key)
+        
+        # Return the extracted text or a placeholder if none is extracted
+        return text if text else "No text found in the image."
 
-    # Step 2: Create the full path
-    base_path = "scraped_images/moha"
-    file_name = f"release_{release}.jpg"  # Constructing the filename based on user input
-    file_path = os.path.join(base_path, file_name)
+    except Exception as e:
+        # Handle exceptions gracefully and provide feedback
+        print(f"An error occurred while processing the image: {e}")
+        return ""
 
-    # Step 3: Check if the file exists
-    if os.path.exists(file_path):
-        print(f"Accessing the file: {file_path}")
-        # You can now proceed to use the file (e.g., display, read, or process it)
-    else:
-        print("File not found. Please check the release name and try again.")
 
-    text = image_to_english(file_path,gemini_api_key)
-    return text
 
 
 
@@ -299,6 +288,4 @@ if __name__ == "__main__":
         model="Llama3-70b-8192",
         api_key=os.getenv("GROQ_API_KEY")
     )
-    bot()
-
-    
+    app.run(debug=True)

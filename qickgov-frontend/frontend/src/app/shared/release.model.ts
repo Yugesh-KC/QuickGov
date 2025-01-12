@@ -5,6 +5,7 @@ export class Release {
   public location: string;
   public article: string;
   public ministry: string;
+  public type: string; // New field
 
   constructor(
     id: string,
@@ -12,7 +13,8 @@ export class Release {
     title: string,
     location: string,
     article: string,
-    ministry: string
+    ministry: string,
+    type: string // New field
   ) {
     this.id = id;
     this.date = date;
@@ -20,5 +22,6 @@ export class Release {
     this.location = location;
     this.article = article;
     this.ministry = ministry;
+    this.type = type; // New field
   }
 }

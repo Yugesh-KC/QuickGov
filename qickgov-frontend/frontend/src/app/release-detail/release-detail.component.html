@@ -29,24 +29,34 @@
   <div class="w-full md:w-2/6 bg-white p-8 rounded-lg shadow-md border border-gray-200 flex flex-col snap-start flex-shrink-0">
     <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Chat</h2>
   
-    <div id="chat-box" class="p-4 rounded-lg flex-grow overflow-auto flex flex-col space-y-2">
+    <div id="chat-box" class="p-4 rounded-lg flex-grow overflow-auto flex flex-col space-y-4">
       <!-- Display the chat history -->
-      <div *ngFor="let message of textArray" class="flex"
-        [ngClass]="message.type === 'user' ? 'justify-end' : 'justify-start'">
+      <div *ngFor="let message of textArray" class="flex flex-col space-y-2"
+        [ngClass]="message.type === 'user' ? 'items-end' : 'items-start'">
+        <span class="text-sm font-semibold text-gray-500" [ngClass]="message.type === 'user' ? 'text-right' : 'text-left'">
+          {{ message.type === 'user' ? 'User' : 'Bot' }}
+        </span>
         <div [ngClass]="{
-              'bg-gray-200': message.type === 'user', 
-              'bg-gray-800 text-white': message.type === 'bot',
+              'bg-blue-100 text-blue-900': message.type === 'user', 
+              'bg-gray-100 text-gray-900 whitespace-pre-wrap': message.type === 'bot',
               'self-end': message.type === 'user',
-              'self-start': message.type === 'bot'}" class="p-2 rounded-lg max-w-xs">
+              'self-start': message.type === 'bot'}" class="p-4 rounded-lg max-w-[32rem] min-w-[18rem] shadow-md">
           {{ message.text }}
         </div>
       </div>
     </div>
   
-    <div class="mt-4 relative">
+    <div class="mt-4 relative min-w-[25rem] max-w-[40rem] w-full mx-1 flex justify-center items-center">
       <input id="chat-input" [(ngModel)]="chat" (keydown.enter)="onEnterText()" type="text"
-        class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+        class="w-full p-4 bg-white text-gray-800 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800 px-10 shadow-md"
         placeholder="Type your message...">
+      <button (click)="onEnterText()" 
+        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 hover:bg-blue-800 p-2 rounded-full transition-all duration-200 shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" 
+          class="h-6 w-6 text-white transform rotate-90">
+          <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
   </div>
 </div>

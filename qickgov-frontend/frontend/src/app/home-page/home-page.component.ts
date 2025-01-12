@@ -10,24 +10,27 @@ import { Router } from '@angular/router';
 })
 export class HomePageComponent implements OnInit {
   releases: Release[] = []; // Initialize as an empty array
+  highlightedButton: string = 'notice'; // Default highlighted button
 
   constructor(private releaseService: ReleaseService, private router: Router) {}
 
   ngOnInit() {
-    console.log('Fetching releases...');
-    this.releaseService.getReleases().subscribe(
-      (data: Release[]) => {
-        console.log('Data received from service:', data);
-        this.releases = data;
-        console.log('Releases received in HomePageComponent:', this.releases);
-      },
-      (error) => {
-        console.error('Error fetching releases:', error);
-      }
-    );
+    this.fetchReleases();
   }
 
-  onLatestExpand() {
-    this.router.navigate(['/latest']);
+  fetchReleases(): void {
+    this.releaseService.getReleases().subscribe((releases) => {
+      this.releases = releases;
+    });
+  }
+
+  toggleHighlight(type: string): void {
+    this.highlightedButton = type;
+  }
+
+  get filteredReleases(): Release[] {
+    return this.releases.filter(
+      (release) => release.type === this.highlightedButton
+    );
   }
 }

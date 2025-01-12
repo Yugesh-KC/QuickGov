@@ -1,4 +1,3 @@
-
 import os
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
@@ -272,9 +271,11 @@ def output_llm(question, chat_history=[], recently_retrieved_info = ""):
         rag_chain = generation_prompt | llm | StrOutputParser()
         generation = rag_chain.invoke({"context": docs, "question": question, "recently_retrieved_info":recently_retrieved_info})
         print(f"Assistant: {generation}") 
+
+    # Ensure the response is concise and relevant
+    generation = generation.strip().split("\n")[0]  # Take only the first line of the response
       
     return recently_retrieved_info, generation
-
 
 @app.route('/chat', methods=['POST'])
 def chatbot(chat_history = []):
@@ -284,7 +285,7 @@ def chatbot(chat_history = []):
         return jsonify({"response": "Goodbye!"}), 200
         
         # Generate response based on the current user input
-    response = output_llm(user_input, chat_history)
+    recently_retrieved_info, response = output_llm(user_input, chat_history)
         
         # Update chat history
     chat_history = add_to_history(chat_history, user_input, response)  
