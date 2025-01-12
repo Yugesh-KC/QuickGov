@@ -10,8 +10,14 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 import qdrant_client
 
 from image_to_english import image_to_english
-import os
-from dotenv import load_dotenv
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+
+app = Flask(__name__)
+CORS(app)
+
+
 def generate_related_questions(question):
     """
     Generate related questions from the user's query using the LLM.
@@ -52,6 +58,7 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
     # Generate related questions
     related_questions = generate_related_questions(question)
     related_questions.insert(0, question)  # Include the original question as the first query
+    print(related_questions)
     disallowed_phrases = [
     "i don’t know", "i don't know", 
     "cannot provide an answer", 
@@ -59,6 +66,10 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
 ]
 
     for idx, query in enumerate(related_questions):
+        print(query)
+        if query == None:
+            query = ""
+
         # Retrieve context for the current query
         docs = retriever.retrieve(query+  " infer any info that you can get related to this query")
         
@@ -123,7 +134,7 @@ def check_context(text, user_query,chat_history, recently_retrieved_info):
     template="""You are an assistant determining whether to retrieve additional context from a database. 
     Carefully analyze the user's question, press release text, recently retrieved info and the provided chat history to make your decision.
     Respond with:
-    - "no" if the question can be answered using the information available in the press release text or the chat history or retireved context. This includes situations where the user is asking for elaboration, clarification, or explanation of a point already mentioned.
+    - "no" if the question is related to the notice/press release, eg:the dates of the release who released it, etc or  the question can be answered using the information available in the press release text or the chat history or retireved context. This includes situations where the user is asking for elaboration, clarification, or explanation of a point already mentioned.
     - "yes" if the  press release or the chat history does not contain sufficient information to accurately answer the user's question. This includes situations where the user's question introduces a new topic, requires factual knowledge not found in the chat history or the press release, or recently retireved info or is unrelated to prior discussions.
     Ensure your decision is based only on the question, the provided press release and the  chat history.
     Give the original question too.
@@ -160,29 +171,33 @@ def check_context(text, user_query,chat_history, recently_retrieved_info):
     
     return decision == "yes", expanded_question
 
-
+@app.route('/chat', methods=['POST'])
 def bot(chat_history = []):
-    image_path = input("Enter your image path: ")
-    text = get_text(image_path,gemini_api_key)
     # print(type(text))
     # print(text)
-    recently_retrieved_info= ""
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == "exit":
-            print("Goodbye!")
-            break
+    recently_retrieved_info = ""
+    user_input = request.json.get('message')
+    image_path = request.json.get('image') 
+    text = get_text(image_path, gemini_api_key) 
+        # user_input = input("You: ")
+    if user_input.lower() == "exit":
+        return jsonify({"response": "Goodbye!"}), 200
         
         # Generate response based on the current user input
-        recently_retrieved_info, response = llm_output(text,user_input, chat_history, recently_retrieved_info)
+    recently_retrieved_info, response = llm_output(text,user_input, chat_history, recently_retrieved_info)
         
         # Update chat history
-        chat_history = add_to_history(chat_history, user_input, response)
+    chat_history = add_to_history(chat_history, user_input, response)
+    return jsonify({"response": response}), 200
+
+
+        
+        # Generate response based on the current user input
+
         
         # Print or log the chat history
         # print(chat_history)
-        
-    return chat_history
+ 
 
 
 def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""):
@@ -199,8 +214,8 @@ def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""
     else:
             generation_prompt = PromptTemplate(
             template="""You are an assistant designed to answer questions based on previous interactions with the user.
-            Use the provided chat history, the recently retrieved infoand the press release to understand the context and provide a relevant response. 
-            If the chat history or the press release or the recently retreived  info alone doesn’t provide enough information to answer the question accurately, 
+            Use the provided chat history, the recently retrieved info and the press release to understand the context and provide a relevant response. 
+            If the chat history or the press release or the recently retrieved info alone doesn’t provide enough information to answer the question accurately, 
             state that you don't know the answer rather than guessing or inventing information. Give a concise answer.
             Press Release:
             {text}
@@ -273,6 +288,4 @@ if __name__ == "__main__":
         model="Llama3-70b-8192",
         api_key=os.getenv("GROQ_API_KEY")
     )
-    bot()
-
-    
+    app.run(debug=True)
