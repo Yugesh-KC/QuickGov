@@ -123,7 +123,7 @@ def check_context(text, user_query,chat_history, recently_retrieved_info):
     template=""" Determine if additional context is needed.  
 
 **Steps:**  
-1. Check if the question is related to the press release text given below,  Nepal's law, constitution, or legal matters or related to chat's history or about different incidents or news in Nepal.  
+1. Check if the question is related to the press release text given below,  Nepal's law, constitution, or legal matters or related to chat's history or about different incidents or news.  
    - If unrelated, respond: "Decision: no, Expanded Question: I cannot answer questions unrelated to Nepal's law or legal matters."  
 
 2. Check the press release for the answer.  
@@ -166,7 +166,8 @@ Expanded Question: [original question OR expanded version if needed]"""
 
 
 def bot(chat_history = []):
-    text = get_text()
+    image_path = input("Enter your image path: ")
+    text = get_text(image_path, gemini_api_key)
     # print(type(text))
     # print(text)
     recently_retrieved_info= ""
@@ -226,23 +227,24 @@ def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""
       
     return recently_retrieved_info, generation
     
-def get_text():
-    release = input("Enter the release about which you want to ask: ")
+def get_text(image_path, gemini_api_key):
+    try:
+        # Ensure the image path exists
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Image file not found: {image_path}")
+        
+        # Extract text using the image_to_english function
+        text = image_to_english(image_path, gemini_api_key)
+        
+        # Return the extracted text or a placeholder if none is extracted
+        return text if text else "No text found in the image."
 
-    # Step 2: Create the full path
-    base_path = "scraped_images/moha"
-    file_name = f"release_{release}.jpg"  # Constructing the filename based on user input
-    file_path = os.path.join(base_path, file_name)
+    except Exception as e:
+        # Handle exceptions gracefully and provide feedback
+        print(f"An error occurred while processing the image: {e}")
+        return ""
 
-    # Step 3: Check if the file exists
-    if os.path.exists(file_path):
-        print(f"Accessing the file: {file_path}")
-        # You can now proceed to use the file (e.g., display, read, or process it)
-    else:
-        print("File not found. Please check the release name and try again.")
 
-    text = image_to_english(file_path,gemini_api_key)
-    return text
 
 
 
