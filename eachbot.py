@@ -197,18 +197,15 @@ def bot(chat_history = []):
 
 def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""):
     decision_to_rag, expanded_query = check_context(text, user_query, chat_history, recently_retrieved_info)
-
-    if decision_to_rag and expanded_query:
-        recently_retrieved_info, generation = iterative_retrieval_and_answer(expanded_query, chat_history)
+    
+    if decision_to_rag:
+        recently_retrieved_info,generation = iterative_retrieval_and_answer(expanded_query, chat_history)
         print(f"Assistant: {generation}")
         # Retrieve context from the vector database
         return recently_retrieved_info, generation
     
-    if expanded_query:
-        if expanded_query.startswith("I cannot answer"):
-            generation = expanded_query
-        else:
-            generation = "I don't know the answer."
+  
+        
     else:
         generation_prompt = PromptTemplate(
             template="""You are an assistant designed to answer questions based on previous interactions with the user.
@@ -228,12 +225,12 @@ def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""
             {user_query}
 
             Answer:"""
-        )
-        rag_chain = generation_prompt | llm | StrOutputParser()
-        generation = rag_chain.invoke({"text": text, "user_query": user_query, "chat_history": chat_history, "recently_retrieved_info": recently_retrieved_info})
-
-    print(f"Assistant: {generation}") 
-    return recently_retrieved_info, generation
+            )
+            rag_chain = generation_prompt | llm | StrOutputParser()
+            generation = rag_chain.invoke({"text":text, "user_query": user_query, "chat_history": chat_history, "recently_retrieved_info": recently_retrieved_info})
+            print(f"Assistant: {generation}") 
+      
+            return recently_retrieved_info, generation
     
 def get_text(image_path, gemini_api_key):
     try:
