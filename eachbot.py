@@ -129,7 +129,7 @@ def check_context(text, user_query,chat_history, recently_retrieved_info):
     template=""" Determine if additional context is needed.  
 
 **Steps:**  
-1. Check if the question is related to Nepal's law, constitution, or legal matters or related to chat's history or about different incidents or news.  
+1. Check if the question is related to the press release text given below,  Nepal's law, constitution, or legal matters or related to chat's history or about different incidents or news.  
    - If unrelated, respond: "Decision: no, Expanded Question: I cannot answer questions unrelated to Nepal's law or legal matters."  
 
 2. Check the press release for the answer.  
@@ -172,30 +172,8 @@ Expanded Question: [original question OR expanded version if needed]"""
 
 @app.route('/chat', methods=['POST'])
 def bot(chat_history = []):
-    text = """ Government of Nepal
-
-Letter Number:- Singhdarbar,
-Received Letter Number and Date:- Kathmandu, Nepal.
-Chane.:- 2
-
-Date 2079/02/23 at 08:50 in the morning, Asmita Tharu, approximately 41 years old, a resident of Ward No. 2, Madhuwan Municipality, Bardiya district, was seriously injured in the Sonha forest. Sonha While sitting under the shade of a tree while plowing a field about 100 meters south of his house, a tiger attacked him from behind. which was sent to Nepalgunj for treatment.
-
-Various demands including control of tiger attacks and provision of wire mesh were made by the locals and the Postal Highway-section was blocked. At 3:45 pm, a team from Bardia National Park including rangers and security personnel was mobilized to the scene to control the tiger.
-
-As the security personnel were coordinating to open the blocked highway, the situation worsened when an angry mob attacked the security personnel at around 6:15 pm. Injured when a bullet hit her. She died in hospital during treatment. In this event, 20 security personnel including Nepal Police and Armed Police Force, Nepal have also been injured. In addition, 1 local resident was injured and is undergoing treatment at Nepalgunj Nursing Home.
-
-In relation to the incident, a committee has been constituted under the chairmanship of Mr. Hari Prasad Ghimire, Joint Secretary, Ministry of Home Affairs to conduct an on-site investigation and submit a report within 7 days. It is requested to inform all concerned for information.
-
-Here
-
-Mr. Hari Prasad Ghimire, Joint Secretary, Ministry of Home Affairs -Convenor
-Mr. Beda Kumar Dhakal, Deputy Director General, Department of National Parks and Wildlife Conservation -Member
-Mr. Krishna Koirala, Superintendent of Police, Nepal Police -Member
-Mr. Vikas Pandey, Deputy Director of Research, National Investigation Department -Member
-Mr. Dhruv Bahadur Khadka, Under Secretary, Ministry of Home Affairs -Member
-
-Date: 2079/02/24
-Joint Secretary/ Spokesperson"""
+    image_path = input("Enter your image path: ")
+    text = get_text(image_path, gemini_api_key)
     # print(type(text))
     # print(text)
     recently_retrieved_info = ""
@@ -259,23 +237,24 @@ def llm_output(text, user_query, chat_history = [], recently_retrieved_info = ""
       
     return recently_retrieved_info, generation
     
-def get_text():
-    release = input("Enter the release about which you want to ask: ")
+def get_text(image_path, gemini_api_key):
+    try:
+        # Ensure the image path exists
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Image file not found: {image_path}")
+        
+        # Extract text using the image_to_english function
+        text = image_to_english(image_path, gemini_api_key)
+        
+        # Return the extracted text or a placeholder if none is extracted
+        return text if text else "No text found in the image."
 
-    # Step 2: Create the full path
-    base_path = "scraped_images/moha"
-    file_name = f"release_{release}.jpg"  # Constructing the filename based on user input
-    file_path = os.path.join(base_path, file_name)
+    except Exception as e:
+        # Handle exceptions gracefully and provide feedback
+        print(f"An error occurred while processing the image: {e}")
+        return ""
 
-    # Step 3: Check if the file exists
-    if os.path.exists(file_path):
-        print(f"Accessing the file: {file_path}")
-        # You can now proceed to use the file (e.g., display, read, or process it)
-    else:
-        print("File not found. Please check the release name and try again.")
 
-    text = image_to_english(file_path,gemini_api_key)
-    return text
 
 
 
