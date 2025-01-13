@@ -15,57 +15,21 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-
-
 def generate_related_questions(question):
     """
     Generate related questions from the user's query using the LLM.
     """
    
-    
     related_questions_prompt = PromptTemplate(
-    template="""You are a specialized assistant that creates thoughtful variations of questions while maintaining their core meaning.
-
-    Guidelines for Question Generation:
-    1. Create exactly 5 variations focusing on:
-    - Using synonyms for key terms
-    - Rephrasing the question structure
-    - Maintaining the original intent
-    - Keeping language clear and accessible
-
-    2. Variation Strategies:
-    - Rephrase as "what", "how", "when", "where" questions where appropriate
-    - Convert between active and passive voice
-    - Add or remove relevant context while keeping core meaning
-    - Use different but equivalent terms
-
-    3. Ensure Each Variation:
-    - Remains faithful to the original question's intent
-    - Uses clear, straightforward language
-    - Could be answered with the same information
-    - Is grammatically complete and standalone
-
-    4. For Legal/Document Context:
-    - Make 2-3 variations specifically searchable in legal documents
-    - Include 2-3 variations suited for press releases
-    - Keep remaining variations general but relevant
-
-    Original Question: {question}
-
-    Generate variations that maintain the core meaning. Each should be clear enough to stand alone:
-    The questions should be of the format:
-    The original question followed by exactly 5 numbered variations: 
-    ### **Output Format**:  
- 
-1. 
-2. 
-3. """
+        template="""You are an assistant that generates rephrasings and similar variations of the user's question.
+        Create 15 variations of the question that use synonyms, alternate phrasing, or very slight expansions. Use synonyms for the keywords too.
+        The questions should remain closely related in context and meaning. Avoid introducing unrelated or different topics.Phrase the question in such a way that its answer can be found in different legal documents in Nepal.
+        Original Question: {question}
+        Similar Questions (one per line):
+        1."""
     )
-
-
     
     related_questions_chain = related_questions_prompt | llm | StrOutputParser()
-
     related_questions = related_questions_chain.invoke({"question": question}).strip().split("\n")
   
     # print(related_questions)
@@ -78,17 +42,13 @@ def generate_related_questions(question):
             clean_questions.append(line.lstrip("12345. ").strip())  # Remove numbering and extra spaces
     # print(clean_questions)
     
-    print(clean_questions)
+    # print(clean_questions)
     return clean_questions
-
-
-
 def iterative_retrieval_and_answer(question, chat_history=[]):
     """
     Retrieves context iteratively using related questions and checks if the answer is in the retrieved data.
     """
     # Generate related questions
-    
     related_questions = generate_related_questions(question)
     related_questions.insert(0, question)  # Include the original question as the first query
     disallowed_phrases = [
@@ -96,19 +56,14 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
     "cannot provide an answer", 
     "does not mention", "does not contain"
 ]
-    retrieved_gen = []
-
     for idx, query in enumerate(related_questions):
         # Retrieve context for the current query
         docs = retriever.retrieve(query+  " infer any info that you can get related to this query")
         
         
         docs= "\n".join([d.text for d in docs])  # Combine document texts
-        print("For one DOc---------------------")
-        print(docs)
-
-
-
+        # print("For one DOc---------------------")
+        # print(docs)
         # Use the retrieved context to attempt generating an answer
         generation_prompt = PromptTemplate(
             template="""You are an assistant answering questions using provided context. 
@@ -120,132 +75,58 @@ def iterative_retrieval_and_answer(question, chat_history=[]):
         )
         generation_chain = generation_prompt | llm | StrOutputParser()
         generation = generation_chain.invoke({"context": docs, "question": question}).strip()
-        print(query)
-        print(generation)
-
+        # print(query)
+        # print(generation)
         # Check if the answer is satisfactory
         if not any(phrase in generation.lower() for phrase in disallowed_phrases):
-            print("===========RETRIEVED INFO====================")
-            
-               # For debuggino =
-            recently_retrieved_info =docs 
-            print(recently_retrieved_info)
-            return recently_retrieved_info, generation  
-
+               # For debugging
+            return generation  
         # Log progress (optional)
         # print(f"Attempt {idx + 1}: No satisfactory answer found.")
-
         # Stop after 5 attempts
-        retrieved_gen.append(generation)
-        if idx == 6:
+        if idx == 16:
             break
-    
-    return "" , "Sorry, the context cannot provide a satisfactory answer to your query."
-
-def decide_context_usage(question, chat_history, recently_retrieved_info):
-    print("Retrieved info:", recently_retrieved_info)
+    return "The context cannot provide a satisfactory answer to the query."
+def decide_context_usage(question, chat_history):
     """
     Ask the LLM if additional context from the vector database is needed for the given question.
     """
     decision_prompt = PromptTemplate(
-    template="""You are an assistant determining if additional context retrieval is needed from a database.
-
-    Assessment Guidelines:
-
-    1. Check if the question is related to Nepal's law, constitution, legal matters, or related to the chat history or about different incidents or news.
-   - If unrelated, respond: "Decision: no, Expanded Question: I cannot answer questions unrelated to Nepal's law or legal matters."  
-
-    2. Check if the answer exists in either:
-    - The provided chat history
-    - The recently retrieved information
-
-    Response Rules:
-    - Return "no" ONLY if you find the complete answer in the existing information
-    - Return "yes" if:
-    - The answer is not found in existing information
-    - The question introduces new topics
-    - Additional factual information is needed
-    - You're unsure if the available information is sufficient
-
-    Question Processing:
-    If decision is "yes", handle the question in one of these ways:
-     Expand the question only if  it is unclear or incomplete and is absolutely necessary like if it is in the forms like"elaborate," "what is this?", etc. If the question is complete in itself donot try to expand.DO NOT tie unrelated questions to the context provided.
-    1. For clear, specific questions:
-    - Use the original question as-is
-    - Example: "What is the capital of Nepal?"
-
-    3. For context-dependent questions:
-    -
-    - Expand ONLY if the question is incomplete (e.g., "elaborate", "tell me more", "what about that?")
-    - Use chat history and retrieved info to create a complete question
-    - Example: 
-        Original: "tell me more"
-        Expanded: "tell me more about [sth related to the previous convo]"
-    - Do this unless absoultely necessary.
-
-    Input Information:
-    ---
-    Recent Retrieved Info: {recently_retrieved_info}
+    template="""You are an assistant determining whether to retrieve additional context from a database. 
+    Carefully analyze the user's question and the provided chat history to make your decision.
+    Respond with:
+    - "no" if the question can be answered fully and accurately using the information available in the chat history. This includes situations where the user is asking for elaboration, clarification, or explanation of a point already mentioned.
+    - "yes" if the chat history does not contain sufficient information to accurately answer the user's question. This includes situations where the user's question introduces a new topic, requires factual knowledge not found in the chat history, or is unrelated to prior discussions.
+    Ensure your decision is based only on the question and the provided chat history.
     Question: {question}
     Chat History: {chat_history}
-    ---
-
-    Output Format:
-    Decision: [yes/no]
-    Expanded Question: [original question OR expanded version only if absolutely needed]"""
+    Decision (yes or no):"""
 )
     decision_chain = decision_prompt | llm | StrOutputParser()
-    response = decision_chain.invoke({"question": question, "chat_history": chat_history, "recently_retrieved_info": recently_retrieved_info}).strip()
-    print(response)
-
-    lines = response.split("\n")
-    decision = None
-    expanded_question = None
-
-    for line in lines:
-        if line.startswith("Decision:"):
-            decision = line.replace("Decision:", "").strip().lower()
-        elif line.startswith("Expanded Question:"):
-            expanded_question = line.replace("Expanded Question:", "").strip()
-
-
-    print(decision)
+    decision = decision_chain.invoke({"question": question, "chat_history": chat_history}).strip().lower()
+    # print(decision)
     
-    return decision == "yes", expanded_question
-
-
+    return decision == "yes"
 def add_to_history(chat_history, user_message, assistant_response):
     # Append user message and assistant response to history
     chat_history.append(f"User: {user_message}")
     chat_history.append(f"Assistant: {assistant_response}")
-
-    all_history.append(f"User: {user_message}")
-    all_history.append(f"Assistant: {assistant_response}")
-    
-
     
     # Truncate the history to keep it at a manageable length
     if len(chat_history) > MAX_HISTORY_LENGTH * 2:  # Each message adds 2 entries (User + Assistant)
         chat_history = chat_history[-MAX_HISTORY_LENGTH * 2:]  # Keep only the most recent MAX_HISTORY_LENGTH messages
-
     return chat_history
-
-def output_llm(question, chat_history=[], recently_retrieved_info = ""):
-    retrieved_gen = []
+def output_llm(question, chat_history=[]):
     """
     Processes the question, retrieving context if the LLM decides it's necessary.
     """
     # Ask the LLM whether context retrieval is needed
-    use_context, expanded_question = decide_context_usage(question, chat_history,recently_retrieved_info)
-
-    if use_context and expanded_question:
-        recently_retrieved_info , generation = iterative_retrieval_and_answer(expanded_question, chat_history)
+    use_context = decide_context_usage(question, chat_history)
+    if use_context:
+        generation = iterative_retrieval_and_answer(question, chat_history)
         print(f"Assistant: {generation}")
         # Retrieve context from the vector database
-        return recently_retrieved_info, generation
-    
-    if expanded_question.startswith("I cannot answer"):
-        generation = expanded_question
+        return generation
     else:
         # Use chat history as context
         docs = [f"Chat History: {chat_history}"]
@@ -253,55 +134,46 @@ def output_llm(question, chat_history=[], recently_retrieved_info = ""):
         
     # Generation prompt template
         generation_prompt = PromptTemplate(
-        template="""You are an assistant designed to answer questions based on previous interactions with the user and the retrieved info
-        Use the provided chat history and the previous retrieved info to understand the context and provide a relevant response. 
-        If the chat history  or the recently retrieved response alone doesn’t provide enough information to answer the question accurately, 
+        template="""You are an assistant designed to answer questions based on previous interactions with the user.
+        Use the provided chat history to understand the context and provide a relevant response. 
+        If the chat history alone doesn’t provide enough information to answer the question accurately, 
         state that you don't know the answer rather than guessing or inventing information.
-
         Chat History:
         {context}
-        Recently Retrieved Info:
-        {recently_retrieved_info}
-
         User's Question:
         {question}
-
         Answer:"""
     )
-
         rag_chain = generation_prompt | llm | StrOutputParser()
-        generation = rag_chain.invoke({"context": docs, "question": question, "recently_retrieved_info":recently_retrieved_info})
+        generation = rag_chain.invoke({"context": docs, "question": question})
         print(f"Assistant: {generation}") 
-
-    # Ensure the response is concise and relevant
-    generation = generation.strip().split("\n")[0]  # Take only the first line of the response
       
-    return recently_retrieved_info, generation
-
+        return generation
+    
 @app.route('/chat', methods=['POST'])
-def chatbot(chat_history =[], recently_retrieved_info = ""):
-    if recently_retrieved_info == None:
-        recently_retrieved_info = ""
-    user_input = request.json.get('message')  # Get the message from the request
+def chatbot(chat_history = []):
+    while True:
+        user_input = request.json.get('message') 
+         # Get the message from the request
         # user_input = input("You: ")
-    if user_input.lower() == "exit":
-        return jsonify({"response": "Goodbye!"}), 200
+        if user_input.lower() == "exit":
+            return jsonify({"response": "Goodbye!"}), 200
+            
+            # Generate response based on the current user input
+        response = output_llm(user_input, chat_history)
+            
+            # Update chat history
+        chat_history = add_to_history(chat_history, user_input, response)  
+        return jsonify({"response": response}), 200
+            # Print or log the chat history
+            # print(chat_history)
+            
         
-        # Generate response based on the current user input
-    recently_retrieved_info, response = output_llm(user_input, chat_history, recently_retrieved_info)
-        
-        # Update chat history
-    chat_history = add_to_history(chat_history, user_input, response)  
-    return jsonify({"response": response}), 200
-
 # Main logic remains the same
 if __name__ == "__main__":
-    recently_retrieved_info = ""
-    retrieved = []
     MAX_HISTORY_LENGTH = 4
     load_dotenv()
     chat_history = []
-    all_history = []
     embed_model = FastEmbedEmbedding(model_name="BAAI/bge-small-en-v1.5")
     groq_api_key = os.environ["GROQ_API_KEY"]
     llm1 = Groq(model="Llama3-70b-8192", api_key=groq_api_key)
@@ -313,7 +185,7 @@ if __name__ == "__main__":
         api_key=os.getenv("QDRANT_API_KEY"),
     )
     # Initialize vector store and storage context
-    vector_store = QdrantVectorStore(client=client, collection_name="newcollection")
+    vector_store = QdrantVectorStore(client=client, collection_name="main_collection")
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     # Build index from documents
     index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
@@ -324,5 +196,4 @@ if __name__ == "__main__":
         model="Llama3-70b-8192",
         api_key=os.getenv("GROQ_API_KEY")
     )
-
     app.run(debug=True)
