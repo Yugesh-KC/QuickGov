@@ -77,4 +77,7 @@ export class AuthService {
       })
       .pipe(map((response: any) => response.data.id));
   }
+  hasToken(): boolean {
+    return this.getToken() != null;
+  }
 }

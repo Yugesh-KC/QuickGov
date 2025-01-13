@@ -3,6 +3,7 @@ import { Injectable, EventEmitter } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Release } from './release.model';
+import { PushNotificationsService } from './notification.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +14,10 @@ export class ReleaseService {
   private releases: Release[] = [];
   private isFetching: boolean = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private _notificationService: PushNotificationsService
+  ) {}
 
   getReleases(): Observable<Release[]> {
     if (this.releases.length > 0) {
@@ -65,5 +69,13 @@ export class ReleaseService {
     } else {
       return of([]);
     }
+  }
+
+  notify(message: string) {
+    const data = {
+      title: 'New Article Alert',
+      alertContent: message,
+    };
+    this._notificationService.generateNotification(data);
   }
 }

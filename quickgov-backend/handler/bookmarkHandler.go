@@ -16,7 +16,7 @@ func GetBookmarks(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
 	}
 	userID := claims.ID
-
+	log.Debug("reached Get Bookmarks")
 	log.Infof("UserID from handler: %s", userID)
 
 	var bookmarks []model.Bookmark
@@ -68,12 +68,14 @@ func GetBookmarkedArticles(c *fiber.Ctx) error {
 	if !ok {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
 	}
+	log.Debug("reached Get bookmarked Articles")
 
 	userID := claims.ID
+	log.Debug(userID)
 
 	db := database.DB.Db
 	var bookmarks []model.Bookmark
-	if err := db.Where("id = ?", userID).Find(&bookmarks).Error; err != nil {
+	if err := db.Where("user_id = ?", userID).Find(&bookmarks).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Failed to fetch bookmarks", "data": err.Error()})
 	}
 

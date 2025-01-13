@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { BookmarkService } from '../shared/bookmark.service';
 import { BookMark } from '../shared/bookmark.model';
-import { UserService } from '../shared/user.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../shared/auth.service';
 
 @Component({
   selector: 'app-update-tab',
@@ -14,22 +14,22 @@ export class UpdateTabComponent implements OnInit {
 
   constructor(
     private bookmarkService: BookmarkService,
-    private userService: UserService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    if (this.userService.hasUserId()) {
-      this.bookmarkService.initializeBookmarks().subscribe((bookmarks) => {
-        this.bookmarks = bookmarks;
-      });
-    }
+    // if (this.userService.hasUserId()) {
+    this.bookmarkService.initializeBookmarks().subscribe((bookmarks) => {
+      this.bookmarks = bookmarks;
+    });
+    // }
   }
   onUpdateDisplay() {
     this.router.navigate(['/update']);
   }
 
-  hasUserId(): boolean {
-    return this.userService.hasUserId();
+  hasToken(): boolean {
+    return this.authService.hasToken();
   }
 }

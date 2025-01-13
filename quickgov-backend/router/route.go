@@ -5,7 +5,6 @@ import (
 	"quickgov-backend/middleware"
 	"quickgov-backend/scraper"
 	"quickgov-backend/socket"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -53,19 +52,19 @@ func SetupRoutes(app *fiber.App) {
 			"userId": userId,
 		})
 
-		ticker := time.NewTicker(3 * time.Second)
-		defer ticker.Stop()
+		// ticker := time.NewTicker(3 * time.Second)
+		// defer ticker.Stop()
 
-		go func() {
-			for {
-				select {
-				case <-ticker.C:
-					// Send a periodic message
-					message := []byte("Hello! This is a periodic message.")
-					socket.SocketHub.SendToUser(claims.ID, message)
-				}
-			}
-		}()
+		// go func() {
+		// 	for {
+		// 		select {
+		// 		case <-ticker.C:
+		// 			// Send a periodic message
+		// 			message := []byte("Hello! This is a periodic message.")
+		// 			socket.SocketHub.SendToUser(claims.ID, message)
+		// 		}
+		// 	}
+		// }()
 
 		for {
 			_, msg, err := c.ReadMessage()
@@ -94,8 +93,8 @@ func SetupRoutes(app *fiber.App) {
 
 	// pBl := bl.Group("")
 	pBl.Use(middleware.AuthMiddleware())
-	pBl.Get("/:user_id", handler.GetBookmarks)
-	pBl.Patch("/:user_id", handler.UpdateBookmarkTopics)
-	pBl.Get("/:user_id/articles", handler.GetBookmarkedArticles)
+	pBl.Get("/", handler.GetBookmarks)
+	pBl.Patch("/", handler.UpdateBookmarkTopics)
+	pBl.Get("/articles", handler.GetBookmarkedArticles)
 
 }

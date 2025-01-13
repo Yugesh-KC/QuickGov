@@ -141,7 +141,7 @@ func SummarizeArticles(c *fiber.Ctx) error {
 						articleIDStr := article.ID.String()                   // Convert UUID to string
 						if !containsString(bookmark.Articles, articleIDStr) { // Check against string array
 							bookmark.Articles = append(bookmark.Articles, articleIDStr)
-							socket.SocketHub.SendToUser(bookmark.UserID, []byte("Bookmark Updated."))
+							socket.SocketHub.SendToUser(bookmark.UserID, []byte(fmt.Sprintf("Topic %s has new article: %s", topic, article.Title)))
 							if err := db.Save(&bookmark).Error; err != nil {
 								fmt.Println("Error updating bookmark:", err)
 							}
