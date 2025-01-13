@@ -21,7 +21,7 @@ func main() {
 
 	app.Use(func(c *fiber.Ctx) error {
 		return c.SendStatus(404)
-
 	})
+
 	app.Listen(":8080")
 }

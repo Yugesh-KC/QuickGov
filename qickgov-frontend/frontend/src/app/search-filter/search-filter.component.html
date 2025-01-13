@@ -1,0 +1,14 @@
+<div class="overflow-y-auto h-screen"> <!-- Set a fixed height for the container -->
+  <button
+    class="px-4 py-2 bg-gray-800 text-white rounded-md shadow-md hover:bg-blue-600 transition-all duration-300 ease-in-out">Filter
+    By</button>
+
+  <div
+    class="block px-4 py-2 text-gray-700 bg-white rounded-lg shadow-xl border border-gray-300 hover:bg-gray-100 transition-all duration-300 ease-in-out backdrop-blur-lg overflow-auto h-64 mt-4">
+    <!-- Set a fixed height for scrolling -->
+    <a *ngFor="let entity of entities" (click)="applyEntityFilter(entity)"
+      class="block px-4 py-2 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer">
+      {{ entity.name }}
+    </a>
+  </div>
+</div>

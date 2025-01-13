@@ -2,13 +2,22 @@ package handler
 
 import (
 	"quickgov-backend/database"
+	"quickgov-backend/middleware"
 	"quickgov-backend/model"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 func GetBookmarks(c *fiber.Ctx) error {
-	userID := c.Params("user_id")
+	claims, ok := c.Locals("claims").(*middleware.Claims)
+	if !ok {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
+	}
+	userID := claims.ID
+	log.Debug("reached Get Bookmarks")
+	log.Infof("UserID from handler: %s", userID)
 
 	var bookmarks []model.Bookmark
 	if err := database.DB.Db.Where("user_id = ?", userID).Find(&bookmarks).Error; err != nil {
@@ -52,4 +61,54 @@ func UpdateBookmarkTopics(c *fiber.Ctx) error {
 	}
 
 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "Bookmark topics updated", "data": bookmark})
+}
+
+func GetBookmarkedArticles(c *fiber.Ctx) error {
+	claims, ok := c.Locals("claims").(*middleware.Claims)
+	if !ok {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
+	}
+	log.Debug("reached Get bookmarked Articles")
+
+	userID := claims.ID
+	log.Debug(userID)
+
+	db := database.DB.Db
+	var bookmarks []model.Bookmark
+	if err := db.Where("user_id = ?", userID).Find(&bookmarks).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Failed to fetch bookmarks", "data": err.Error()})
+	}
+
+	response := make([]fiber.Map, 0)
+
+	for _, bookmark := range bookmarks {
+		var articles []model.Article
+
+		if len(bookmark.Articles) > 0 {
+			if err := db.Where("id = ANY(?)", bookmark.Articles).Find(&articles).Error; err != nil {
+				return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Failed to fetch related articles", "data": err.Error()})
+			}
+		}
+
+		for _, topic := range bookmark.Topics {
+			filteredArticles := make([]model.Article, 0)
+			for _, article := range articles {
+				if containsTopic(article, topic) {
+					filteredArticles = append(filteredArticles, article)
+				}
+			}
+
+			response = append(response, fiber.Map{
+				"topic":    topic,
+				"articles": filteredArticles,
+			})
+		}
+	}
+
+	return c.Status(200).JSON(fiber.Map{"status": "success", "data": response})
+}
+
+func containsTopic(article model.Article, topic string) bool {
+	return strings.Contains(article.Title, topic) || strings.Contains(article.Article, topic)
+
 }

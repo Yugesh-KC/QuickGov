@@ -14,6 +14,7 @@ type Bookmark struct {
 	ID        uuid.UUID   `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
 	UserID    uuid.UUID   `gorm:"type:uuid;not null" json:"user_id"`
 	Topics    StringArray `gorm:"type:text[]" json:"topics"`
+	Articles  StringArray `gorm:"type:text[]" json:"articles"`
 	CreatedAt time.Time   `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time   `gorm:"autoUpdateTime" json:"updated_at"`
 }
@@ -57,7 +58,7 @@ func (a *StringArray) Scan(value interface{}) error {
 func (a StringArray) Value() (driver.Value, error) {
 	// Format as PostgreSQL array literal
 	if len(a) == 0 {
-		return "{}::text[]", nil // Return an empty array
+		return "{}", nil // Return an empty array without type casting
 	}
 	// Create a string representation of the array
 	var formattedArray string

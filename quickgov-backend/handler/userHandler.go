@@ -1,11 +1,16 @@
 package handler
 
 import (
+	"log"
 	"quickgov-backend/database"
+	"quickgov-backend/middleware"
 	"quickgov-backend/model"
 
+	// "strings"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
+	"gorm.io/gorm"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -33,8 +38,9 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Could not create user", "data": err.Error()})
 	}
 	bookmarks := model.Bookmark{
-		UserID: user.ID,
-		Topics: []string{},
+		UserID:   user.ID,
+		Topics:   model.StringArray{},
+		Articles: model.StringArray{},
 	}
 
 	if err = db.Create(&bookmarks).Error; err != nil {
@@ -45,28 +51,38 @@ func CreateUser(c *fiber.Ctx) error {
 }
 
 func GetSingleUser(c *fiber.Ctx) error {
+	claims, ok := c.Locals("claims").(*middleware.Claims)
+	if !ok {
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Internal Server Error", "data": nil})
+	}
+	log.Println("Verified claims:", claims)
+
 	db := database.DB.Db
 	var user model.User
-	id := c.Params("id")
-	db.Find(&user, "id = ?", id)
+	result := db.Where("id = ?", claims.ID).First(&user)
 
-	if user.ID == uuid.Nil {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return c.Status(404).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
+		}
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Database error", "data": nil})
 	}
 
-	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "Users found", "data": user})
+	// socket.SocketHub.SendToUser(claims.ID, []byte("This is me silly."))
+
+	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "User found", "data": user})
 }
 
-func GetAllUsers(c *fiber.Ctx) error {
-	db := database.DB.Db
-	var users []model.User
+// func GetAllUsers(c *fiber.Ctx) error {
+// 	db := database.DB.Db
+// 	var users []model.User
 
-	//db.Raw("SELECT * FROM Users").Scan(&users)
-	db.Find(&users)
+// 	//db.Raw("SELECT * FROM Users").Scan(&users)
+// 	db.Find(&users)
 
-	if len(users) == 0 {
-		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Users not found", "data": nil})
-	}
+// 	if len(users) == 0 {
+// 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Users not found", "data": nil})
+// 	}
 
-	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "Users found", "data": users})
-}
+// 	return c.Status(200).JSON(fiber.Map{"status": "success", "message": "Users found", "data": users})
+// }
